@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
+import { PrismaClient } from "@prisma/client";
 
 dotenv.config();
 
