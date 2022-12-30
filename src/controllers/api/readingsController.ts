@@ -5,7 +5,15 @@ import { prisma } from "../../db";
 
 export async function getAll(req: Request, res: Response, next: NextFunction) {
   try {
-    const readings = await prisma.readings.findMany();
+    const statusQuery = req.query.status ? String(req.query.status) : undefined;
+
+    const readings = await prisma.readings.findMany({
+      where: {
+        quality: {
+          status: statusQuery, // does not do anything if it is undefined
+        },
+      },
+    });
     res.json(readings);
   } catch (error) {
     return next(error);
@@ -16,6 +24,7 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
   try {
     const startTime = new Date(String(req.query.start));
     const endTime = new Date(String(req.query.end));
+    const statusQuery = req.query.status ? String(req.query.status) : undefined;
 
     if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
       return res.status(400).send("400 Bad Request (use ISO 8601 time format)");
@@ -26,6 +35,9 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
         createdAt: {
           gte: startTime,
           lte: endTime,
+        },
+        quality: {
+          status: statusQuery, // does not do anything if it is undefined
         },
       },
     });
