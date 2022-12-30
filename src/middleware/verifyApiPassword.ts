@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-export function verifyApiPassword(req: Request, res: Response, next: NextFunction) {
+export async function verifyApiPassword(req: Request, res: Response, next: NextFunction) {
   const { password } = req.headers;
   const { API_PASSWORD } = process.env;
 
