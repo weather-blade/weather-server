@@ -6,6 +6,7 @@ import * as readingsController from "../../controllers/api/readingsController";
 // GET
 
 router.get("/", readingsController.getAll);
+router.get("/range", readingsController.getTimeRange);
 
 // POST
 
