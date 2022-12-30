@@ -12,7 +12,7 @@
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json|prisma)\"",
     "build": "npx tsc",
     "start": "node dist/index.js",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon dist/index.js\""
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon dist/src/index.js\""
   },
   "repository": {
     "type": "git",
