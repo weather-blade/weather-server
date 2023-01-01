@@ -49,6 +49,7 @@
     "@prisma/client": "^4.8.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-validator": "^6.14.2",
     "morgan": "^1.10.0"
   }
 }

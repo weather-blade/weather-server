@@ -10,6 +10,8 @@ router.get("/range", readingsController.getTimeRange);
 
 // POST
 
+router.post("/", readingsController.postReading);
+
 // PUT
 
 // DELETE
