@@ -14,6 +14,7 @@ export async function getAll(req: Request, res: Response, next: NextFunction) {
           status: statusQuery, // does not do anything if it is undefined
         },
       },
+      include: { quality: true },
     });
     res.json(readings);
   } catch (error) {
@@ -41,6 +42,7 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
           status: statusQuery, // does not do anything if it is undefined
         },
       },
+      include: { quality: true },
     });
 
     res.json(readings);
