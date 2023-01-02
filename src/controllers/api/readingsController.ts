@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { body, checkSchema, Schema, validationResult } from "express-validator";
+import { body, query, checkSchema, Schema, validationResult } from "express-validator";
 import { prisma } from "../../db";
 
 // GET
@@ -19,6 +19,7 @@ export async function getAll(req: Request, res: Response, next: NextFunction) {
     });
     res.json(readings);
   } catch (error) {
+    console.error(error);
     return res.status(500).send("500 Internal Server Error");
   }
 }
@@ -49,6 +50,7 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
 
     res.json(readings);
   } catch (error) {
+    console.error(error);
     return res.status(500).send("500 Internal Server Error");
   }
 }
@@ -159,6 +161,7 @@ export const postReading = [
 
       res.json(result);
     } catch (error) {
+      console.error(error);
       return res.status(500).send("500 Internal Server Error");
     }
   },
@@ -168,7 +171,7 @@ export const postReading = [
 
 export const updateReading = [
   // validate and sanitize inputs first
-  body("id")
+  body("id", "ID must be number")
     .trim()
     .isNumeric()
     .escape()
@@ -227,9 +230,49 @@ export const updateReading = [
 
       res.json(result);
     } catch (error) {
+      console.error(error);
       return res.status(500).send("500 Internal Server Error");
     }
   },
 ];
 
 // DELETE
+
+export const deleteReading = [
+  query("id", "ID must be number")
+    .trim()
+    .isNumeric()
+    .escape()
+    .custom(async (inputValue) => {
+      // custom validator for checking if there is matching id in database
+      await prisma.readings.findFirstOrThrow({
+        where: { id: parseInt(inputValue) },
+      });
+
+      return true; // reading with matching id was found. continue
+    }),
+
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // check for validation errors first
+      const errors = validationResult(req);
+
+      if (!errors.isEmpty()) {
+        console.log(errors);
+        return res.status(400).json(errors); // respond with the validation errors
+      }
+
+      // no validation errors. extract and parse query params of request
+      const id = parseInt(req.query.id as string);
+
+      const results = await prisma.readings.delete({
+        where: { id: id },
+      });
+
+      res.json(results);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send("500 Internal Server Error");
+    }
+  },
+];

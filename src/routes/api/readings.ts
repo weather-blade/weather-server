@@ -18,4 +18,6 @@ router.put("/", ...readingsController.updateReading);
 
 // DELETE
 
+router.delete("/", ...readingsController.deleteReading);
+
 export default router;
