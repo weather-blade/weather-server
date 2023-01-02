@@ -123,6 +123,10 @@ export const postReading = [
         },
       });
 
+      if (req.headers["short"] === "true") {
+        return res.sendStatus(200);
+      }
+
       res.json(result);
     } catch (error) {
       return next(error);
