@@ -53,34 +53,60 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
 
 // POST
 
+const inputSchema: Schema = {
+  status: {
+    trim: true,
+    isLength: {
+      errorMessage: "Status must not be empty",
+      options: { min: 1 },
+    },
+    escape: true,
+    custom: {
+      options: async (inputValue) => {
+        // custom validator to check against statuses stored in database
+        const results = await prisma.quality.findMany({
+          select: { status: true },
+        });
+
+        // array with all the possible statuses
+        const statuses = results.map((result) => result.status);
+
+        if (!statuses.includes(inputValue)) {
+          throw new Error(`Status must be equal to one of predefined statuses: [${statuses}]`);
+        }
+
+        return true;
+      },
+    },
+  },
+
+  temperature_BMP: {
+    trim: true,
+    isNumeric: true,
+    escape: true,
+  },
+  temperature_DHT: {
+    trim: true,
+    isNumeric: true,
+    escape: true,
+  },
+  pressure_BMP: {
+    trim: true,
+    isNumeric: true,
+    escape: true,
+  },
+  humidity_DHT: {
+    trim: true,
+    isNumeric: true,
+    escape: true,
+  },
+};
+
 export const postReading = [
   // validate and sanitize inputs first
-  body("status", "Status must not be empty.")
-    .trim()
-    .isLength({ min: 1 })
-    .custom(async (inputValue) => {
-      // custom validator to check against statuses stored in database
-      const results = await prisma.quality.findMany({
-        select: { status: true },
-      });
-
-      // array with all the possible statuses
-      const statuses = results.map((result) => result.status);
-
-      if (!statuses.includes(inputValue)) {
-        throw new Error(`Status must be equal to one of predefined statuses: [${statuses}]`);
-      }
-
-      return true;
-    })
-    .escape(),
+  checkSchema(inputSchema),
 
   body("createdAt", "Date must comply with ISO8601").optional().trim().isISO8601().escape(),
-
-  body("temperature_BMP", "Temperature_BMP must be non-empty number.").trim().isNumeric().escape(),
-  body("temperature_DHT", "Temperature_DHT must be non-empty number.").trim().isNumeric().escape(),
-  body("pressure_BMP", "Pressure_BMP must be non-empty number.").trim().isNumeric().escape(),
-  body("humidity_DHT", "Humidity_DHT must be non-empty number.").trim().isNumeric().escape(),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -137,55 +163,6 @@ export const postReading = [
 ];
 
 // PUT
-
-const inputSchema: Schema = {
-  status: {
-    trim: true,
-    isLength: {
-      errorMessage: "Status must not be empty",
-      options: { min: 1 },
-    },
-    custom: {
-      options: async (inputValue) => {
-        // custom validator to check against statuses stored in database
-        const results = await prisma.quality.findMany({
-          select: { status: true },
-        });
-
-        // array with all the possible statuses
-        const statuses = results.map((result) => result.status);
-
-        if (!statuses.includes(inputValue)) {
-          throw new Error(`Status must be equal to one of predefined statuses: [${statuses}]`);
-        }
-
-        return true;
-      },
-    },
-    escape: true,
-  },
-
-  temperature_BMP: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-  temperature_DHT: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-  pressure_BMP: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-  humidity_DHT: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-};
 
 export const updateReading = [
   // validate and sanitize inputs first

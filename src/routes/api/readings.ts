@@ -10,7 +10,7 @@ router.get("/range", readingsController.getTimeRange);
 
 // POST
 
-router.post("/", readingsController.postReading);
+router.post("/", ...readingsController.postReading);
 
 // PUT
 
