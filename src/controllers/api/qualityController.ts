@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { body, query, checkSchema, Schema, validationResult } from "express-validator";
+import { checkSchema, Schema, validationResult } from "express-validator";
 import { prisma } from "../../db";
 
 // GET
@@ -126,3 +126,35 @@ export const updateQuality = [
 ];
 
 // DELETE
+
+export const deleteQuality = [
+  // validate and sanitize inputs first
+  checkSchema(idSchema),
+
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // check for validation errors first
+      const errors = validationResult(req);
+
+      if (!errors.isEmpty()) {
+        console.log(errors);
+        return res.status(400).json(errors); // respond with the validation errors
+      }
+
+      // no validation errors. extract and parse values from body of request
+
+      const id = parseInt(req.query.id as string);
+
+      console.log(id);
+
+      const result = await prisma.quality.delete({
+        where: { id: id },
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send("500 Internal Server Error");
+    }
+  },
+];

@@ -17,4 +17,6 @@ router.put("/", ...qualityControllers.updateQuality);
 
 // DELETE
 
+router.delete("/", ...qualityControllers.deleteQuality);
+
 export default router;
