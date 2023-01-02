@@ -9,6 +9,8 @@ router.get("/", qualityControllers.getAll);
 
 // POST
 
+router.post("/", ...qualityControllers.postQuality);
+
 // PUT
 
 // DELETE
