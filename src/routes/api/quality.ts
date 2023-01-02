@@ -13,6 +13,8 @@ router.post("/", ...qualityControllers.postQuality);
 
 // PUT
 
+router.put("/", ...qualityControllers.updateQuality);
+
 // DELETE
 
 export default router;
