@@ -15,6 +15,7 @@ export async function getAll(req: Request, res: Response, next: NextFunction) {
         },
       },
       include: { quality: true },
+      orderBy: { createdAt: "desc" },
     });
     res.json(readings);
   } catch (error) {
@@ -43,6 +44,7 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
         },
       },
       include: { quality: true },
+      orderBy: { createdAt: "desc" },
     });
 
     res.json(readings);
