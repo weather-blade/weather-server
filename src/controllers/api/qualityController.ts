@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { checkSchema, Schema, validationResult } from "express-validator";
+import { query, checkSchema, Schema, validationResult } from "express-validator";
 import { prisma } from "../../db";
 
 // GET
@@ -130,6 +130,21 @@ export const updateQuality = [
 export const deleteQuality = [
   // validate and sanitize inputs first
   checkSchema(idSchema),
+
+  query("id").custom(async (inputValue) => {
+    // custom validator to prevent deleting quality that is used by other readings
+    const readings = await prisma.readings.findFirst({
+      where: {
+        qualityId: parseInt(inputValue),
+      },
+    });
+
+    if (readings !== null) {
+      throw new Error("Quality is used by some reading(s)");
+    }
+
+    return true; // quality is not used by anything. it is safe to delete now
+  }),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
