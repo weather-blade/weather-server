@@ -18,7 +18,7 @@ export async function getAll(req: Request, res: Response, next: NextFunction) {
     });
     res.json(readings);
   } catch (error) {
-    return next(error);
+    return res.status(500).send("500 Internal Server Error");
   }
 }
 
@@ -47,7 +47,7 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
 
     res.json(readings);
   } catch (error) {
-    return next(error);
+    return res.status(500).send("500 Internal Server Error");
   }
 }
 
@@ -131,7 +131,7 @@ export const postReading = [
 
       res.json(result);
     } catch (error) {
-      return next(error);
+      return res.status(500).send("500 Internal Server Error");
     }
   },
 ];
