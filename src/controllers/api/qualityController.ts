@@ -145,8 +145,6 @@ export const deleteQuality = [
 
       const id = parseInt(req.query.id as string);
 
-      console.log(id);
-
       const result = await prisma.quality.delete({
         where: { id: id },
       });
