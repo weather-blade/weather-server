@@ -14,6 +14,8 @@ router.post("/", readingsController.postReading);
 
 // PUT
 
+router.put("/", ...readingsController.updateReading);
+
 // DELETE
 
 export default router;
