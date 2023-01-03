@@ -20,7 +20,7 @@ app.use((req: Request, res: Response) => {
   res.sendStatus(404);
 });
 
-const port = process.env.PORT;
+const port = process.env.PORT || 8080;
 app.listen(port, () => {
   console.log(`[server] Server is running at http://localhost:${port}`);
 });
