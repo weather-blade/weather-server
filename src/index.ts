@@ -15,10 +15,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // CORS handling
 app.use((req: Request, res: Response, next: NextFunction) => {
-  const allowedOrigins = [
-    "https://bladesheng.github.io/weather-station-frontend/",
-    "http://localhost:8000",
-  ];
+  const allowedOrigins = ["https://bladesheng.github.io", "http://localhost:8000"];
 
   const origin = String(req.headers.origin);
   const resOrigin = allowedOrigins.indexOf(origin) >= 0 ? origin : allowedOrigins[0];
