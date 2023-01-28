@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { body, query, checkSchema, Schema, validationResult } from "express-validator";
 import { prisma } from "../../db";
+import { sendEventsToAll } from "../../controllers/api/eventsHandler";
 
 // GET
 
@@ -153,13 +154,16 @@ export const postReading = [
           pressure_BMP,
           humidity_DHT,
         },
+        include: { quality: true }, // include quality text in return object
       });
 
       if (req.headers["short"] === "true") {
-        return res.sendStatus(200);
+        res.sendStatus(200); // end response only with 200 ok
+      } else {
+        res.json(result); // end response with the full new reading
       }
 
-      res.json(result);
+      sendEventsToAll(result); // push the new reading to all SSE clients
     } catch (error) {
       console.error(error);
       return res.status(500).send("500 Internal Server Error");

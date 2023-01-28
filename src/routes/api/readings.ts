@@ -4,11 +4,14 @@ const router = express.Router();
 import { verifyApiPassword } from "../../middleware/verifyApiPassword";
 
 import * as readingsController from "../../controllers/api/readingsController";
+import { eventsHandler } from "../../controllers/api/eventsHandler";
 
 // GET
 
 router.get("/", readingsController.getAll);
 router.get("/range", readingsController.getTimeRange);
+
+router.get("/events", eventsHandler); // Server-sent events
 
 // POST
 

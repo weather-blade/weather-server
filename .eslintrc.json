@@ -12,6 +12,7 @@
   },
   "overrides": [],
   "rules": {
-    "prefer-template": "warn"
+    "prefer-template": "warn",
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "next" }]
   }
 }
