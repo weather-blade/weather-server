@@ -20,6 +20,14 @@ export async function eventsHandler(req: Request, res: Response, next: NextFunct
   clients.push(newClient);
   console.log(`[SSE] ${clientId} Connection opened`);
 
+  const keepAliveMS = 60 * 1000;
+  function keepAlive() {
+    // SSE comment for keep alive. Chrome times out after two minutes.
+    res.write(":\n\n");
+    setTimeout(keepAlive, keepAliveMS);
+  }
+  setTimeout(keepAlive, keepAliveMS);
+
   // remove client on connection close
   res.on("close", () => {
     clients = clients.filter((client) => client.id !== clientId);
