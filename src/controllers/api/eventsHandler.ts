@@ -20,9 +20,9 @@ export async function eventsHandler(req: Request, res: Response, next: NextFunct
   clients.push(newClient);
   console.log(`[SSE] ${clientId} Connection opened`);
 
-  const keepAliveMS = 60 * 1000;
+  const keepAliveMS = 30 * 1000;
   function keepAlive() {
-    // SSE comment for keep alive. Chrome times out after two minutes.
+    // SSE comment for keep alive. Fly.io free plan times out after 60s.
     res.write(":\n\n");
     setTimeout(keepAlive, keepAliveMS);
   }

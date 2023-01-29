@@ -21,7 +21,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   const resOrigin = allowedOrigins.indexOf(origin) >= 0 ? origin : allowedOrigins[0];
 
   res.header("Access-Control-Allow-Origin", resOrigin);
-  res.header("Access-Control-Allow-Headers", "Content-Type, password, short");
+  res.header("Access-Control-Allow-Headers", "password, short");
   res.header("Access-Control-Max-Age", "86400"); // skip recurent preflight requests for 24h
 
   next();
