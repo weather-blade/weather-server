@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
+import helmet from "helmet";
+import compression from "compression";
 
 import apiRouter from "./routes/api/api";
 
@@ -10,8 +12,10 @@ const app = express();
 
 app.use(morgan("dev"));
 
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(compression());
 
 // CORS handling
 app.use((req: Request, res: Response, next: NextFunction) => {

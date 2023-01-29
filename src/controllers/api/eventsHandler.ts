@@ -24,6 +24,7 @@ export async function eventsHandler(req: Request, res: Response, next: NextFunct
   function keepAlive() {
     // SSE comment for keep alive. Fly.io free plan times out after 60s.
     res.write(":\n\n");
+    res.flush(); // send the partially compressed response
     setTimeout(keepAlive, keepAliveMS);
   }
   setTimeout(keepAlive, keepAliveMS);
@@ -41,5 +42,6 @@ export async function sendEventsToAll(
 ) {
   for (const client of clients) {
     client.res.write(`data: ${JSON.stringify(newReading)}\n\n`);
+    client.res.flush(); // send the partially compressed response
   }
 }
