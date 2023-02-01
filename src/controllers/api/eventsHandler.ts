@@ -19,12 +19,20 @@ export async function eventsHandler(req: Request, res: Response, next: NextFunct
   };
   clients.push(newClient);
   console.log(`[SSE] ${clientId} Connection opened`);
+  console.log(`[SSE] Number of connected clients: ${clients.length}`);
 
   const keepAliveMS = 30 * 1000;
-  function keepAlive() {
-    // SSE comment for keep alive. Fly.io free plan times out after 60s.
-    res.write(":\n\n");
-    res.flush(); // send the partially compressed response
+  let connectionOpen = true;
+  async function keepAlive() {
+    if (!connectionOpen) return; // prevent any more recursion if the connection was closed
+    try {
+      // Send keep-alive message with just SSE comment. Fly.io free plan times out after 60s of inactivity.
+      res.write(":\n\n");
+      res.flush(); // send the partially compressed response
+    } catch (error) {
+      console.error(error);
+    }
+
     setTimeout(keepAlive, keepAliveMS);
   }
   setTimeout(keepAlive, keepAliveMS);
@@ -32,7 +40,14 @@ export async function eventsHandler(req: Request, res: Response, next: NextFunct
   // remove client on connection close
   res.on("close", () => {
     clients = clients.filter((client) => client.id !== clientId);
+    // make 100% sure the connection is closed to prevent server memory leaks
+    res.end();
+    res.socket?.destroy();
+
+    // stop sending keep-alive messages and end the recursive loop (another potential memory leak)
+    connectionOpen = false;
     console.log(`[SSE] ${clientId} Connection closed`);
+    console.log(`[SSE] Number of connected clients: ${clients.length}`);
   });
 }
 
@@ -41,7 +56,11 @@ export async function sendEventsToAll(
   newReading: Prisma.ReadingsGetPayload<{ include: { quality: true } }>
 ) {
   for (const client of clients) {
-    client.res.write(`data: ${JSON.stringify(newReading)}\n\n`);
-    client.res.flush(); // send the partially compressed response
+    try {
+      client.res.write(`data: ${JSON.stringify(newReading)}\n\n`);
+      client.res.flush(); // send the partially compressed response
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
