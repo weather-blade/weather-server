@@ -36,14 +36,12 @@ You need local `Postgres` database:
 CREATE DATABASE weather_station;
 
 npx prisma migrate dev --name init
-
 ```
 
 Seed it with:
 
 ```
 npx ts-node ./prisma/seed.ts
-
 ```
 
 Create `.env` file (see `.env.example`)
