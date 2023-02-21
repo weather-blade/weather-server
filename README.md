@@ -44,7 +44,7 @@ Seed it with:
 npx ts-node ./prisma/seed.ts
 ```
 
-Create `.env` file (see `.env.example`)
+Create `.env` file - see [`.env.example`](https://github.com/Bladesheng/weather-station-backend/blob/main/.env.example)
 
 Then run the development server with:
 
