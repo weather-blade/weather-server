@@ -52,7 +52,7 @@ npx ts-node ./prisma/seed.ts
 npm run dev
 ```
 
-Example API requests in [Postman](https://www.postman.com/telecoms-operator-36486599/workspace/weather-station/request/24296961-8ced04cb-946c-4b14-909f-a094c9b36d4f)
+Example API requests in: [Postman](https://www.postman.com/telecoms-operator-36486599/workspace/weather-station/request/24296961-8ced04cb-946c-4b14-909f-a094c9b36d4f)
 
 Formatting with `Prettier` and linting with `ESLint`:
 
