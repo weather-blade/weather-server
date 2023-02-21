@@ -16,13 +16,13 @@ The database and API is hosted on fly.io
 
 ## Building locally
 
-Clone the repository, then:
+- Clone the repository, then:
 
 ```
 npm install
 ```
 
-To deploy to `fly.io`, run:
+- To deploy to `fly.io`, run:
 
 ```
 fly deploy
