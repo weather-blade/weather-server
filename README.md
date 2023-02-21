@@ -30,7 +30,7 @@ fly deploy
 
 ### Local development server
 
-You need local `Postgres` database:
+- You need local `Postgres` database:
 
 ```
 CREATE DATABASE weather_station;
@@ -38,15 +38,15 @@ CREATE DATABASE weather_station;
 npx prisma migrate dev --name init
 ```
 
-Seed it with:
+- Seed it with:
 
 ```
 npx ts-node ./prisma/seed.ts
 ```
 
-Create `.env` file - see [`.env.example`](https://github.com/Bladesheng/weather-station-backend/blob/main/.env.example)
+- Create `.env` file - see [`.env.example`](https://github.com/Bladesheng/weather-station-backend/blob/main/.env.example)
 
-Then run the development server with:
+- Then run the development server with:
 
 ```
 npm run dev
