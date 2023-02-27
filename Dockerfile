@@ -1,36 +1,34 @@
-FROM debian:bullseye as builder
-
-ARG NODE_VERSION=18.12.0
-
-RUN apt-get update; apt install -y curl python-is-python3 pkg-config build-essential
-RUN curl https://get.volta.sh | bash
-ENV VOLTA_HOME /root/.volta
-ENV PATH /root/.volta/bin:$PATH
-RUN volta install node@${NODE_VERSION}
-
-#######################################################################
+FROM node:18.14.2-bullseye-slim as builder
+RUN apt-get update && apt-get upgrade -y
 
 RUN mkdir /app
 WORKDIR /app
 
-# NPM will not install any package listed in "devDependencies" when NODE_ENV is set to "production",
-# to install all modules: "npm install --production=false".
-# Ref: https://docs.npmjs.com/cli/v9/commands/npm-install#description
-
+# get dependencies first separately
+COPY package.json package-lock.json ./
+# You have to copy schema before you run install for reasons unknown to man. Otherwise running build will fail.
+COPY prisma/schema.prisma ./
 ENV NODE_ENV production
+RUN npm install
 
+# the rest of the source code needed for building
 COPY . .
 
-RUN npm install && npm run build
-FROM debian:bullseye
+RUN npm run build
 
-LABEL fly_launch_runtime="nodejs"
 
-COPY --from=builder /root/.volta /root/.volta
-COPY --from=builder /app /app
+FROM node:18.14.2-bullseye-slim as deployment
+RUN apt-get update && apt-get upgrade -y
+
+# keep only files needed to run the server
+COPY --from=builder /app/dist /app/dist
+COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/package-lock.json /app/package-lock.json
+COPY --from=builder /app/prisma /app/prisma
 
 WORKDIR /app
 ENV NODE_ENV production
-ENV PATH /root/.volta/bin:$PATH
+LABEL fly_launch_runtime="nodejs"
 
 CMD [ "npm", "run", "start" ]
