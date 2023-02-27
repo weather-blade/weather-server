@@ -1,8 +1,12 @@
-fly.toml
-Dockerfile
-.dockerignore
-node_modules
 .git
-
+.gitignore
+.env.example
+.prettierrc.json
+fly.toml
 dist
+docker-compose.yml
+Dockerfile
+LICENSE
+node_modules
 todo.txt
+README.md

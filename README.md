@@ -28,31 +28,26 @@ npm install
 fly deploy
 ```
 
+- Set .env [secrets](https://fly.io/docs/reference/secrets/)
+
 ### Local development server
-
-- You need local `Postgres` database:
-
-```
-CREATE DATABASE weather_station;
-
-npx prisma migrate dev --name init
-```
-
-- Seed it with:
-
-```
-npx ts-node ./prisma/seed.ts
-```
 
 - Create `.env` file - see [`.env.example`](https://github.com/Bladesheng/weather-station-backend/blob/main/.env.example)
 
-- Then run the development server with:
+- Run the development server with:
 
 ```
-npm run dev
+docker compose up -d
 ```
 
-Example API requests in: [Postman](https://www.postman.com/telecoms-operator-36486599/workspace/weather-station/request/24296961-8ced04cb-946c-4b14-909f-a094c9b36d4f)
+- Once the app container is running, run database migration and seed inside:
+
+```
+npx prisma migrate dev --name init
+npx ts-node ./prisma/seed.ts
+```
+
+Example API requests in [Postman](https://www.postman.com/telecoms-operator-36486599/workspace/weather-station/request/24296961-8ced04cb-946c-4b14-909f-a094c9b36d4f)
 
 Formatting with `Prettier` and linting with `ESLint`:
 
