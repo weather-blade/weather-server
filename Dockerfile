@@ -9,7 +9,7 @@ COPY package.json package-lock.json ./
 # You have to copy schema before you run install for reasons unknown to man. Otherwise running build will fail.
 COPY prisma/schema.prisma ./
 ENV NODE_ENV production
-RUN npm install
+RUN npm ci
 
 # the rest of the source code needed for building
 COPY . .
