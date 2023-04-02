@@ -1,0 +1,13 @@
+{
+  "configurations": [
+    {
+      "name": "Docker Node.js debug launch",
+      "type": "docker",
+      "remoteRoot": "/app",
+      "protocol": "inspector",
+      "request": "attach",
+      "preLaunchTask": "docker-run: debug",
+      "platform": "node"
+    }
+  ]
+}
