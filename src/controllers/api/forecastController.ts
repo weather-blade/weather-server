@@ -7,7 +7,10 @@ import { MET } from "../../MET";
 export async function getForecast(req: Request, res: Response, next: NextFunction) {
   try {
     res.set("Expires", MET.forecastExpires);
-    res.json(MET.timeSeries);
+    res.json({
+      forecast: MET.timeSeries,
+      sunrise: MET.sunrise,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).send("500 Internal Server Error");
