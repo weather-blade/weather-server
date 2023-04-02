@@ -2,6 +2,7 @@
 .gitignore
 .env.example
 .prettierrc.json
+.vscode
 fly.toml
 dist
 docker-compose.yml
