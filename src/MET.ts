@@ -60,9 +60,10 @@ export const MET = (() => {
 
   const _latitude = 50.6578;
   const _longitude = 14.9917;
+  const _altitude = 320;
 
   console.log("[server] Well MET");
-  // start the update loops on init
+  // start both update loops on init
   _updateForecast();
   _updateSunrise();
 
@@ -70,19 +71,18 @@ export const MET = (() => {
     try {
       console.log("[server] Updating forecast data...");
 
-      const altitude = 320;
-      const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?&lat=${_latitude}&lon=${_longitude}&altitude=${altitude}`;
+      const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?&lat=${_latitude}&lon=${_longitude}&altitude=${_altitude}`;
 
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "User-Agent": "github.com/Bladesheng/weather-station-frontend keadr23@gmail.com",
-          "If-Modified-Since": lastModified, // this won't do anything on first function run, only on subsequent runs
+          "If-Modified-Since": lastModified, // as per MET.no ToS, to not repeatedly download the same data
         },
         cache: "default", // return response from cache (if it's not expired)
       });
 
-      // if the status code is 304, don't parse the body (because it isn't there)
+      // if the status code is 304, don't parse the body (it hasn't changed since lastModified time, so it wasn't included in the response)
       if (response.ok) {
         const responseData = await response.json();
 
@@ -93,19 +93,25 @@ export const MET = (() => {
         timeSeries = responseData.properties.timeseries;
       }
 
-      const expires = response.headers.get("expires");
-      if (expires === null) throw "Expires header is missing";
-      const timeToExpires = new Date(expires).getTime() - Date.now();
+      // when to expect next update of the weather model
+      let expiresHeader = response.headers.get("expires");
+      if (expiresHeader === null) {
+        console.warn("Expires header is missing", response.headers);
+        expiresHeader = new Date(Date.now() + 40 * 60 * 1000).toISOString(); // to try again in 40 minutes (updates are every ~30 minutes)
+      }
+      const timeToExpires = new Date(expiresHeader).getTime() - Date.now();
+      // when responding to GET requests, set the Expires header to 6 minutes after original request (MET api) expiration time
+      forecastExpires = new Date(new Date(expiresHeader).getTime() + 6 * 60 * 1000).toUTCString();
 
-      // Set the Expires header of the GET response to 6 minutes after original request (MET api) expiration time
-      forecastExpires = new Date(new Date(expires).getTime() + 6 * 60 * 1000).toUTCString();
-
-      const lastModifiedNew = response.headers.get("last-modified"); // get fresh value of last-modified header
-      if (lastModifiedNew === null) throw "Last-modified header is missing";
+      let lastModifiedHeader = response.headers.get("last-modified");
+      if (lastModifiedHeader === null) {
+        console.warn("Last-modified header is missing", response.headers);
+        lastModifiedHeader = new Date().toISOString(); // just make something up
+      }
 
       // schedule update for 5 minutes after expiration time
       setTimeout(() => {
-        _updateForecast(lastModifiedNew);
+        _updateForecast(lastModifiedHeader as string);
       }, timeToExpires + 5 * 60 * 1000);
 
       console.log(
