@@ -1,10 +1,10 @@
 import express from "express";
 const router = express.Router();
 
-import { verifyApiPassword } from "../../middleware/verifyApiPassword";
+import { verifyApiPassword } from "../../middleware/verifyApiPassword.js";
 
-import * as readingsController from "../../controllers/api/readingsController";
-import { eventsHandler } from "../../controllers/api/eventsHandler";
+import * as readingsController from "../../controllers/api/readingsController.js";
+import { eventsHandler } from "../../controllers/api/eventsHandler.js";
 
 // GET
 

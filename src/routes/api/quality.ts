@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 
-import * as qualityControllers from "../../controllers/api/qualityController";
+import * as qualityControllers from "../../controllers/api/qualityController.js";
 
 // GET
 

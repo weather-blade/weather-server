@@ -1,11 +1,11 @@
 import express from "express";
 const router = express.Router();
 
-import { verifyApiPassword } from "../../middleware/verifyApiPassword";
+import { verifyApiPassword } from "../../middleware/verifyApiPassword.js";
 
-import readingsRouter from "./readings";
-import qualityRouter from "./quality";
-import forecastRouter from "./forecast";
+import readingsRouter from "./readings.js";
+import qualityRouter from "./quality.js";
+import forecastRouter from "./forecast.js";
 
 router.use("/readings", readingsRouter);
 router.use("/quality", verifyApiPassword, qualityRouter);

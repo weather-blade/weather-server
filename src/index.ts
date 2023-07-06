@@ -4,7 +4,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 
-import apiRouter from "./routes/api/api";
+import apiRouter from "./routes/api/api.js";
 
 dotenv.config();
 

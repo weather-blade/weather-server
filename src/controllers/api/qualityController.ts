@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { query, checkSchema, Schema, validationResult } from "express-validator";
-import { prisma } from "../../db";
+import { prisma } from "../../db.js";
 
 // GET
 

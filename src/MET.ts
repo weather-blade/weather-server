@@ -110,9 +110,12 @@ export const MET = (() => {
       }
 
       // schedule update for 5 minutes after expiration time
-      setTimeout(() => {
-        _updateForecast(lastModifiedHeader as string);
-      }, timeToExpires + 5 * 60 * 1000);
+      setTimeout(
+        () => {
+          _updateForecast(lastModifiedHeader as string);
+        },
+        timeToExpires + 5 * 60 * 1000
+      );
 
       console.log(
         `[server] Forecast data updated (${response.status}). Next update will be in ${Math.floor(

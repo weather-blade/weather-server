@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 
-import * as forecastController from "../../controllers/api/forecastController";
+import * as forecastController from "../../controllers/api/forecastController.js";
 
 // GET
 

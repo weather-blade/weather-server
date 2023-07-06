@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-import { MET } from "../../MET";
+import { MET } from "../../MET.js";
 
 // GET
 

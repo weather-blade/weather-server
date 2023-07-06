@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { body, query, checkSchema, Schema, validationResult } from "express-validator";
-import { prisma } from "../../db";
-import { sendEventsToAll } from "../../controllers/api/eventsHandler";
+import { prisma } from "../../db.js";
+import { sendEventsToAll } from "../../controllers/api/eventsHandler.js";
 
 // GET
 
