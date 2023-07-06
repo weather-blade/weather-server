@@ -16,42 +16,51 @@ The database and API is hosted on fly.io
 
 ## Building locally
 
-- Clone the repository, then:
+- Clone the repo, then create `.env` file - see [`.env.example`](https://github.com/Bladesheng/weather-station-backend/blob/main/.env.example)
 
-```
+- Install packages:
+
+```sh
 npm install
 ```
 
-- To deploy to `fly.io`, run:
+- Now you have 2 options:
 
-```
-fly deploy
-```
+### a) Local dev server + local database
 
-- Set .env [secrets](https://fly.io/docs/reference/secrets/)
+- Push Prisma schema to the database and seed it:
 
-### Local development server
-
-- Create `.env` file - see [`.env.example`](https://github.com/Bladesheng/weather-station-backend/blob/main/.env.example)
-
-- Run the development server with:
-
-```
-docker compose up -d
+```sh
+npm run db:push
+npm run db:seed
 ```
 
-- Once the app container is running, run database migration and seed inside:
+- Run the dev server:
 
+```sh
+npm run dev
 ```
-npx prisma migrate dev --name init
-npx ts-node ./prisma/seed.ts
+
+### b) Dockerized dev server + dockerized database
+
+- Run the server and database container:
+
+```sh
+npm run docker
+```
+
+- Once the app container is running, run database migration and seed inside of it:
+
+```sh
+npm run db:push
+npm run db:seed
 ```
 
 Example API requests in [Postman](https://www.postman.com/telecoms-operator-36486599/workspace/weather-station/request/24296961-8ced04cb-946c-4b14-909f-a094c9b36d4f)
 
 Formatting with `Prettier` and linting with `ESLint`:
 
-```
+```sh
 npm run format
 npm run lint
 ```
