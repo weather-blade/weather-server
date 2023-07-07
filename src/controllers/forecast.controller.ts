@@ -1,8 +1,5 @@
-import { Request, Response, NextFunction } from "express";
-
-import { MET } from "../../MET.js";
-
-// GET
+import type { Request, Response, NextFunction } from "express";
+import { MET } from "../utils/MET.js";
 
 export async function getForecast(req: Request, res: Response, next: NextFunction) {
   try {

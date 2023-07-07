@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 let clients: { id: number; res: Response }[] = []; // all open connections
 
 // Server-sent events handler - open the connection and keep it alive
-export async function eventsHandler(req: Request, res: Response, next: NextFunction) {
+export async function readingsEventsController(req: Request, res: Response, next: NextFunction) {
   const headers = {
     "Content-Type": "text/event-stream",
     Connection: "keep-alive",

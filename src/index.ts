@@ -1,10 +1,10 @@
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
-
-import apiRouter from "./routes/api/api.js";
+import apiRouter from "./routes/api.route.js";
+import type { Request, Response, NextFunction } from "express";
 
 dotenv.config();
 
