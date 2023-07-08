@@ -7,15 +7,7 @@ import type { Request, Response, NextFunction } from "express";
 
 export async function getAll(req: Request, res: Response, next: NextFunction) {
   try {
-    const statusQuery = req.query.status ? String(req.query.status) : undefined;
-
     const readings = await prisma.readings.findMany({
-      where: {
-        quality: {
-          status: statusQuery, // does not do anything if it is undefined
-        },
-      },
-      include: { quality: true },
       orderBy: { createdAt: "desc" },
     });
     res.json(readings);
@@ -29,7 +21,6 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
   try {
     const startTime = new Date(String(req.query.start));
     const endTime = new Date(String(req.query.end));
-    const statusQuery = req.query.status ? String(req.query.status) : undefined;
 
     if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
       return res.status(400).send("400 Bad Request (use ISO 8601 time format)");
@@ -41,11 +32,7 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
           gte: startTime,
           lte: endTime,
         },
-        quality: {
-          status: statusQuery, // does not do anything if it is undefined
-        },
       },
-      include: { quality: true },
       orderBy: { createdAt: "desc" },
     });
 
@@ -59,32 +46,6 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
 // POST
 
 const inputSchema: Schema = {
-  status: {
-    trim: true,
-    isLength: {
-      errorMessage: "Status must not be empty",
-      options: { min: 1 },
-    },
-    escape: true,
-    custom: {
-      options: async (inputValue) => {
-        // custom validator to check against statuses stored in database
-        const results = await prisma.quality.findMany({
-          select: { status: true },
-        });
-
-        // array with all the possible statuses
-        const statuses = results.map((result) => result.status);
-
-        if (!statuses.includes(inputValue)) {
-          throw new Error(`Status must be equal to one of predefined statuses: [${statuses}]`);
-        }
-
-        return true;
-      },
-    },
-  },
-
   temperature_BMP: {
     trim: true,
     isNumeric: true,
@@ -125,8 +86,6 @@ export const postReading = [
 
       // no validation errors. extract and parse values from body of request
 
-      const { status } = req.body;
-
       const temperature_BMP = parseFloat(req.body.temperature_BMP);
       const temperature_DHT = parseFloat(req.body.temperature_DHT);
       const pressure_BMP = parseFloat(req.body.pressure_BMP);
@@ -145,8 +104,6 @@ export const postReading = [
 
       const result = await prisma.readings.create({
         data: {
-          quality: { connect: { status: status } },
-
           createdAt,
 
           temperature_BMP,
@@ -154,7 +111,6 @@ export const postReading = [
           pressure_BMP,
           humidity_DHT,
         },
-        include: { quality: true }, // include quality text in return object
       });
 
       if (req.headers["short"] === "true") {
@@ -206,8 +162,6 @@ export const updateReading = [
 
       const id = parseInt(req.body.id);
 
-      const { status } = req.body;
-
       const temperature_BMP = parseFloat(req.body.temperature_BMP);
       const temperature_DHT = parseFloat(req.body.temperature_DHT);
       const pressure_BMP = parseFloat(req.body.pressure_BMP);
@@ -221,8 +175,6 @@ export const updateReading = [
       const result = await prisma.readings.update({
         where: { id: id },
         data: {
-          quality: { connect: { status: status } },
-
           createdAt,
 
           temperature_BMP,

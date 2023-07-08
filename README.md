@@ -49,7 +49,7 @@ npm run dev
 npm run docker
 ```
 
-- Once the app container is running, run database migration and seed inside of it:
+- Once the app container is running, push Prisma schema to the databse seed it:
 
 ```sh
 npm run db:push
