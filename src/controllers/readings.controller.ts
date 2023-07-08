@@ -1,6 +1,7 @@
-import { body, query, checkSchema, Schema, validationResult } from "express-validator";
+import { body, query, checkSchema, validationResult } from "express-validator";
 import { prisma } from "../db/prisma.js";
 import { sendEventsToAll } from "../controllers/readingsEvents.controller.js";
+import { readingSchema } from "../validations/readings.validation.js";
 import type { Request, Response, NextFunction } from "express";
 
 // GET
@@ -45,32 +46,9 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
 
 // POST
 
-const inputSchema: Schema = {
-  temperature_BMP: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-  temperature_DHT: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-  pressure_BMP: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-  humidity_DHT: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-};
-
 export const postReading = [
   // validate and sanitize inputs first
-  checkSchema(inputSchema),
+  checkSchema(readingSchema),
 
   body("createdAt", "Date must comply with ISO8601").optional().trim().isISO8601().escape(),
 
@@ -146,7 +124,7 @@ export const updateReading = [
 
   body("createdAt", "Date must comply with ISO8601").trim().isISO8601().escape(),
 
-  checkSchema(inputSchema),
+  checkSchema(readingSchema),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
