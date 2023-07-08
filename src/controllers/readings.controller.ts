@@ -51,7 +51,6 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
 // POST
 
 export const postReading = [
-  // validate and sanitize inputs first
   checkSchema(readingSchema),
 
   body("createdAt", "Date must comply with ISO8601").optional().trim().isISO8601().escape(),
@@ -111,7 +110,7 @@ export const postReading = [
 
 // PUT
 
-export const updateReading = [
+export const upsertReading = [
   checkSchema(readingIdSchema),
 
   body("createdAt", "Date must comply with ISO8601").trim().isISO8601().escape(),
@@ -142,9 +141,18 @@ export const updateReading = [
         return res.status(400).send("400 Bad Request (use ISO 8601 time format)");
       }
 
-      const result = await prisma.readings.update({
+      const result = await prisma.readings.upsert({
         where: { id: id },
-        data: {
+        update: {
+          createdAt,
+
+          temperature_BMP,
+          temperature_DHT,
+          pressure_BMP,
+          humidity_DHT,
+        },
+        create: {
+          id,
           createdAt,
 
           temperature_BMP,

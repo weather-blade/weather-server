@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get("/", readingsController.getAll);
 router.post("/", authenticate, ...readingsController.postReading);
-router.put("/", authenticate, ...readingsController.updateReading);
+router.put("/", authenticate, ...readingsController.upsertReading);
 router.delete("/", authenticate, ...readingsController.deleteReading);
 
 router.get("/events", readingsEventsController); // Server-sent events
