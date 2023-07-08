@@ -19,14 +19,4 @@ model Readings {
   temperature_DHT Float
   pressure_BMP    Float
   humidity_DHT    Float
-
-  quality   Quality @relation(fields: [qualityId], references: [id])
-  qualityId Int
-}
-
-model Quality {
-  id     Int    @id @default(autoincrement())
-  status String @unique
-
-  Readings Readings[]
 }
