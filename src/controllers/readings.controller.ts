@@ -1,7 +1,11 @@
-import { body, query, checkSchema, validationResult } from "express-validator";
+import { body, checkSchema, validationResult } from "express-validator";
 import { prisma } from "../db/prisma.js";
 import { sendEventsToAll } from "../controllers/readingsEvents.controller.js";
-import { readingSchema } from "../validations/readings.validation.js";
+import {
+  readingSchema,
+  readingIdSchema,
+  readingIdExistsSchema,
+} from "../validations/readings.validation.js";
 import type { Request, Response, NextFunction } from "express";
 
 // GET
@@ -108,19 +112,7 @@ export const postReading = [
 // PUT
 
 export const updateReading = [
-  // validate and sanitize inputs first
-  body("id", "ID must be number")
-    .trim()
-    .isNumeric()
-    .escape()
-    .custom(async (inputValue) => {
-      // custom validator for checking if there is matching id in database
-      await prisma.readings.findFirstOrThrow({
-        where: { id: parseInt(inputValue) },
-      });
-
-      return true; // reading with matching id was found. continue
-    }),
+  checkSchema(readingIdSchema),
 
   body("createdAt", "Date must comply with ISO8601").trim().isISO8601().escape(),
 
@@ -138,7 +130,7 @@ export const updateReading = [
 
       // no validation errors. extract and parse values from body of request
 
-      const id = parseInt(req.body.id);
+      const id = parseInt(req.query.id as string);
 
       const temperature_BMP = parseFloat(req.body.temperature_BMP);
       const temperature_DHT = parseFloat(req.body.temperature_DHT);
@@ -173,18 +165,8 @@ export const updateReading = [
 // DELETE
 
 export const deleteReading = [
-  query("id", "ID must be number")
-    .trim()
-    .isNumeric()
-    .escape()
-    .custom(async (inputValue) => {
-      // custom validator for checking if there is matching id in database
-      await prisma.readings.findFirstOrThrow({
-        where: { id: parseInt(inputValue) },
-      });
-
-      return true; // reading with matching id was found. continue
-    }),
+  checkSchema(readingIdSchema),
+  checkSchema(readingIdExistsSchema),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
