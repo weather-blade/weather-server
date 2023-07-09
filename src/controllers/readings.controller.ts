@@ -1,6 +1,7 @@
-import { body, query, checkSchema, Schema, validationResult } from "express-validator";
+import { checkSchema, validationResult } from "express-validator";
 import { prisma } from "../db/prisma.js";
 import { sendEventsToAll } from "../controllers/readingsEvents.controller.js";
+import * as readingsValidator from "../validations/readings.validation.js";
 import type { Request, Response, NextFunction } from "express";
 
 // GET
@@ -45,34 +46,9 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
 
 // POST
 
-const inputSchema: Schema = {
-  temperature_BMP: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-  temperature_DHT: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-  pressure_BMP: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-  humidity_DHT: {
-    trim: true,
-    isNumeric: true,
-    escape: true,
-  },
-};
-
 export const postReading = [
-  // validate and sanitize inputs first
-  checkSchema(inputSchema),
-
-  body("createdAt", "Date must comply with ISO8601").optional().trim().isISO8601().escape(),
+  checkSchema(readingsValidator.reading),
+  checkSchema(readingsValidator.readingDate),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -91,16 +67,7 @@ export const postReading = [
       const pressure_BMP = parseFloat(req.body.pressure_BMP);
       const humidity_DHT = parseFloat(req.body.humidity_DHT);
 
-      let { createdAt } = req.body;
-      // if date isn't included in body, set this to undefined.
-      // undefined means Prisma will use default value (current time)
-      if (createdAt !== undefined) {
-        createdAt = new Date(createdAt);
-
-        if (isNaN(createdAt.getTime())) {
-          return res.status(400).send("400 Bad Request (use ISO 8601 time format)");
-        }
-      }
+      const createdAt = readingsValidator.getDate(req);
 
       const result = await prisma.readings.create({
         data: {
@@ -129,24 +96,10 @@ export const postReading = [
 
 // PUT
 
-export const updateReading = [
-  // validate and sanitize inputs first
-  body("id", "ID must be number")
-    .trim()
-    .isNumeric()
-    .escape()
-    .custom(async (inputValue) => {
-      // custom validator for checking if there is matching id in database
-      await prisma.readings.findFirstOrThrow({
-        where: { id: parseInt(inputValue) },
-      });
-
-      return true; // reading with matching id was found. continue
-    }),
-
-  body("createdAt", "Date must comply with ISO8601").trim().isISO8601().escape(),
-
-  checkSchema(inputSchema),
+export const upsertReading = [
+  checkSchema(readingsValidator.readingId),
+  checkSchema(readingsValidator.readingDateRequired),
+  checkSchema(readingsValidator.reading),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -160,21 +113,27 @@ export const updateReading = [
 
       // no validation errors. extract and parse values from body of request
 
-      const id = parseInt(req.body.id);
+      const id = parseInt(req.query.id as string);
 
       const temperature_BMP = parseFloat(req.body.temperature_BMP);
       const temperature_DHT = parseFloat(req.body.temperature_DHT);
       const pressure_BMP = parseFloat(req.body.pressure_BMP);
       const humidity_DHT = parseFloat(req.body.humidity_DHT);
 
-      const createdAt = new Date(req.body.createdAt);
-      if (isNaN(createdAt.getTime())) {
-        return res.status(400).send("400 Bad Request (use ISO 8601 time format)");
-      }
+      const createdAt = readingsValidator.getDate(req);
 
-      const result = await prisma.readings.update({
+      const result = await prisma.readings.upsert({
         where: { id: id },
-        data: {
+        update: {
+          createdAt,
+
+          temperature_BMP,
+          temperature_DHT,
+          pressure_BMP,
+          humidity_DHT,
+        },
+        create: {
+          id,
           createdAt,
 
           temperature_BMP,
@@ -195,18 +154,8 @@ export const updateReading = [
 // DELETE
 
 export const deleteReading = [
-  query("id", "ID must be number")
-    .trim()
-    .isNumeric()
-    .escape()
-    .custom(async (inputValue) => {
-      // custom validator for checking if there is matching id in database
-      await prisma.readings.findFirstOrThrow({
-        where: { id: parseInt(inputValue) },
-      });
-
-      return true; // reading with matching id was found. continue
-    }),
+  checkSchema(readingsValidator.readingId),
+  checkSchema(readingsValidator.readingIdExists),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
