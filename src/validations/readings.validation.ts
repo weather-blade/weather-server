@@ -1,7 +1,8 @@
 import { prisma } from "../db/prisma.js";
 import type { Schema } from "express-validator";
+import type { Request } from "express";
 
-export const readingSchema: Schema = {
+export const reading: Schema = {
   temperature_BMP: {
     in: ["body"],
     trim: true,
@@ -28,7 +29,7 @@ export const readingSchema: Schema = {
   },
 };
 
-export const readingIdSchema: Schema = {
+export const readingId: Schema = {
   id: {
     in: ["query"],
     trim: true,
@@ -37,7 +38,7 @@ export const readingIdSchema: Schema = {
   },
 };
 
-export const readingIdExistsSchema: Schema = {
+export const readingIdExists: Schema = {
   id: {
     in: ["query"],
     custom: {
@@ -56,3 +57,31 @@ export const readingIdExistsSchema: Schema = {
     },
   },
 };
+
+export const readingDate: Schema = {
+  createdAt: {
+    in: ["body"],
+    optional: true,
+    trim: true,
+    isISO8601: {
+      errorMessage: "The datetime string must match ISO 8601 format",
+    },
+    escape: true,
+  },
+};
+
+export const readingDateRequired = structuredClone(readingDate);
+readingDateRequired.createdAt.optional = false;
+
+export function getDate(req: Request) {
+  const createdAt: "string" | undefined = req.body.createdAt;
+  // If date isn't included in body, it will be undefined.
+  // Undefined means Prisma will use default value (current time).
+  if (createdAt !== undefined) {
+    // If the field passes validator.js validation, this should always return valid date.
+    // https://github.com/validatorjs/validator.js/blob/master/src/lib/isISO8601.js
+    return new Date(createdAt);
+  } else {
+    return undefined;
+  }
+}

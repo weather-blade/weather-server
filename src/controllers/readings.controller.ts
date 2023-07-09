@@ -1,11 +1,7 @@
-import { body, checkSchema, validationResult } from "express-validator";
+import { checkSchema, validationResult } from "express-validator";
 import { prisma } from "../db/prisma.js";
 import { sendEventsToAll } from "../controllers/readingsEvents.controller.js";
-import {
-  readingSchema,
-  readingIdSchema,
-  readingIdExistsSchema,
-} from "../validations/readings.validation.js";
+import * as readingsValidator from "../validations/readings.validation.js";
 import type { Request, Response, NextFunction } from "express";
 
 // GET
@@ -51,9 +47,8 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
 // POST
 
 export const postReading = [
-  checkSchema(readingSchema),
-
-  body("createdAt", "Date must comply with ISO8601").optional().trim().isISO8601().escape(),
+  checkSchema(readingsValidator.reading),
+  checkSchema(readingsValidator.readingDate),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -72,16 +67,7 @@ export const postReading = [
       const pressure_BMP = parseFloat(req.body.pressure_BMP);
       const humidity_DHT = parseFloat(req.body.humidity_DHT);
 
-      let { createdAt } = req.body;
-      // if date isn't included in body, set this to undefined.
-      // undefined means Prisma will use default value (current time)
-      if (createdAt !== undefined) {
-        createdAt = new Date(createdAt);
-
-        if (isNaN(createdAt.getTime())) {
-          return res.status(400).send("400 Bad Request (use ISO 8601 time format)");
-        }
-      }
+      const createdAt = readingsValidator.getDate(req);
 
       const result = await prisma.readings.create({
         data: {
@@ -111,11 +97,9 @@ export const postReading = [
 // PUT
 
 export const upsertReading = [
-  checkSchema(readingIdSchema),
-
-  body("createdAt", "Date must comply with ISO8601").trim().isISO8601().escape(),
-
-  checkSchema(readingSchema),
+  checkSchema(readingsValidator.readingId),
+  checkSchema(readingsValidator.readingDateRequired),
+  checkSchema(readingsValidator.reading),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -136,10 +120,7 @@ export const upsertReading = [
       const pressure_BMP = parseFloat(req.body.pressure_BMP);
       const humidity_DHT = parseFloat(req.body.humidity_DHT);
 
-      const createdAt = new Date(req.body.createdAt);
-      if (isNaN(createdAt.getTime())) {
-        return res.status(400).send("400 Bad Request (use ISO 8601 time format)");
-      }
+      const createdAt = readingsValidator.getDate(req);
 
       const result = await prisma.readings.upsert({
         where: { id: id },
@@ -173,8 +154,8 @@ export const upsertReading = [
 // DELETE
 
 export const deleteReading = [
-  checkSchema(readingIdSchema),
-  checkSchema(readingIdExistsSchema),
+  checkSchema(readingsValidator.readingId),
+  checkSchema(readingsValidator.readingIdExists),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
