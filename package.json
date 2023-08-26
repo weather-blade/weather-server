@@ -8,7 +8,7 @@
     "build": "npx tsc",
     "start": "node dist/src/index.js",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon dist/src/index.js\"",
-    "docker": "docker compose up -d",
+    "docker": "docker compose up --build",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",

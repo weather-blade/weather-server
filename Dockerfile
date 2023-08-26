@@ -20,6 +20,8 @@ RUN npm run build
 FROM node:18.16.1-bullseye-slim as deployment
 RUN apt-get update && apt-get upgrade -y
 
+RUN apt-get install redis-server -y
+
 # keep only files needed to run the server
 COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/node_modules /app/node_modules
@@ -31,4 +33,4 @@ WORKDIR /app
 ENV NODE_ENV production
 LABEL fly_launch_runtime="nodejs"
 
-CMD [ "npm", "run", "start" ]
+CMD service redis-server start & npm run start
