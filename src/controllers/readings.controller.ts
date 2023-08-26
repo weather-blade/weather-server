@@ -44,6 +44,28 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
   }
 }
 
+export async function getLast24h(req: Request, res: Response, next: NextFunction) {
+  try {
+    const startTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // from 24 hours ago (miliseconds)
+    const endTime = new Date(); // up until now
+
+    const readings = await prisma.readings.findMany({
+      where: {
+        createdAt: {
+          gte: startTime,
+          lte: endTime,
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json(readings);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("500 Internal Server Error");
+  }
+}
+
 // POST
 
 export const postReading = [

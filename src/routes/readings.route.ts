@@ -14,4 +14,6 @@ router.get("/events", readingsEventsController); // Server-sent events
 
 router.get("/range", readingsController.getTimeRange);
 
+router.get("/24h", readingsController.getLast24h);
+
 export default router;
