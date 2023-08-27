@@ -52,7 +52,7 @@ export async function readingsEventsController(req: Request, res: Response, next
 }
 
 // push the new reading to all clients
-export async function sendEventsToAll(newReading: Prisma.ReadingsGetPayload<null>) {
+export function sendEventsToAll(newReading: Prisma.ReadingsGetPayload<null>) {
   for (const client of clients) {
     try {
       client.res.write(`data: ${JSON.stringify(newReading)}\n\n`);

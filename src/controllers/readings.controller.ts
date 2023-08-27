@@ -2,6 +2,7 @@ import { checkSchema, validationResult } from "express-validator";
 import { prisma } from "../db/prisma.js";
 import { sendEventsToAll } from "../controllers/readingsEvents.controller.js";
 import * as readingsValidator from "../validations/readings.validation.js";
+import { redisClient } from "../db/redis.js";
 import type { Request, Response, NextFunction } from "express";
 
 // GET
@@ -38,6 +39,40 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
     });
 
     res.json(readings);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("500 Internal Server Error");
+  }
+}
+
+export async function getLast24h(req: Request, res: Response, next: NextFunction) {
+  try {
+    const cacheResults = await redisClient.get("readings24h");
+
+    if (cacheResults) {
+      const readings = JSON.parse(cacheResults);
+      res.json(readings);
+    } else {
+      const startTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // from 24 hours ago (miliseconds)
+      const endTime = new Date(); // up until now
+
+      const readings = await prisma.readings.findMany({
+        where: {
+          createdAt: {
+            gte: startTime,
+            lte: endTime,
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      res.json(readings);
+
+      redisClient.set("readings24h", JSON.stringify(readings), {
+        EX: 360, // expire after 6 minutes
+        NX: true,
+      });
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).send("500 Internal Server Error");
@@ -87,6 +122,9 @@ export const postReading = [
       }
 
       sendEventsToAll(result); // push the new reading to all SSE clients
+
+      // invalidate cache
+      redisClient.del("readings24h");
     } catch (error) {
       console.error(error);
       return res.status(500).send("500 Internal Server Error");
