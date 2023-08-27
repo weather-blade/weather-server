@@ -1,4 +1,4 @@
-FROM node:18.16.1-bullseye-slim as builder
+FROM node:18.17.1-bullseye-slim as builder
 RUN apt-get update && apt-get upgrade -y
 
 RUN mkdir /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 
-FROM node:18.16.1-bullseye-slim as deployment
+FROM node:18.17.1-bullseye-slim as deployment
 RUN apt-get update && apt-get upgrade -y
 
 RUN apt-get install redis-server -y
