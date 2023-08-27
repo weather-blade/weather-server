@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { redisClient } from "../db/redis.js";
+import { randomIntFromInterval } from "../utils/functions.js";
 import type { ITimePointForecast, ITimePointSunrise } from "../types/MET.js";
 
 export async function getForecastSunrise(req: Request, res: Response, next: NextFunction) {
@@ -46,7 +47,7 @@ class MET {
     try {
       if (
         MET._timeSeries.length > 0 && // if we have something in memory
-        MET._forecastExpires.getTime() + 5 * 60 * 1000 > Date.now() // and it's not stale (+5 minutes after official expiration)
+        MET._forecastExpires.getTime() > Date.now() // and it's not stale
       ) {
         return MET._timeSeries;
       } else {
@@ -79,7 +80,11 @@ class MET {
           // just expect next update in 40 minutes (updates are published every ~30 minutes)
           expiresHeader = new Date(Date.now() + 40 * 60 * 1000).toISOString();
         }
-        MET._forecastExpires = new Date(expiresHeader);
+        // add random delay to the actual expiration timer (MET TOS)
+        const randomDelay = randomIntFromInterval(3, 6);
+        MET._forecastExpires = new Date(
+          new Date(expiresHeader).getTime() + randomDelay * 60 * 1000
+        );
 
         let lastModifiedHeader = response.headers.get("last-modified");
         if (lastModifiedHeader === null) {
