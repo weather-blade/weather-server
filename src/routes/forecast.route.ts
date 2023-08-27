@@ -3,6 +3,6 @@ import * as forecastController from "../controllers/forecast.controller.js";
 
 const router = express.Router();
 
-router.get("/", forecastController.getForecast);
+router.get("/", forecastController.getForecastSunrise);
 
 export default router;
