@@ -13,6 +13,7 @@ router.delete("/", authenticate, ...readingsController.deleteReading);
 router.get("/events", readingsEventsController); // Server-sent events
 
 router.get("/range", readingsController.getTimeRange);
+router.get("/month", readingsController.getMonth);
 
 router.get("/24h", readingsController.getLast24h);
 

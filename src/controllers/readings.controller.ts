@@ -45,6 +45,61 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
   }
 }
 
+export async function getMonth(req: Request, res: Response, next: NextFunction) {
+  try {
+    const WEEK_SECONDS = 604800;
+
+    const year = Number(req.query.year);
+    const month = Number(req.query.month);
+
+    const firstDay = new Date();
+    // -1 because months are 0 indexed
+    // 1 to get fist day of that month
+    firstDay.setUTCFullYear(year, month - 1, 1);
+
+    const lastDay = new Date(firstDay);
+    lastDay.setUTCMonth(firstDay.getMonth() + 1); // the next month
+    lastDay.setUTCDate(0); // 0 will allways give you last day of the previous month
+
+    if (isNaN(firstDay.getTime()) || isNaN(lastDay.getTime())) {
+      return res.status(400).send("400 Bad Request (wrong year / month format)");
+    }
+
+    const cacheName = `${firstDay.getUTCFullYear()}-${firstDay.getUTCMonth()}`;
+    const cacheResults = await redisClient.get(cacheName);
+
+    if (Date.now() > lastDay.getTime()) {
+      // cache in browser for 7 days if the month already passed
+      // (because readings from previous months shouldn't change)
+      res.set("Cache-Control", `max-age=${WEEK_SECONDS}`);
+    }
+
+    if (cacheResults) {
+      const readings = JSON.parse(cacheResults);
+      res.json(readings);
+    } else {
+      const readings = await prisma.readings.findMany({
+        where: {
+          createdAt: {
+            gte: firstDay,
+            lte: lastDay,
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      res.json(readings);
+
+      redisClient.set(cacheName, JSON.stringify(readings), {
+        EX: WEEK_SECONDS, // expire after 7 days
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("500 Internal Server Error");
+  }
+}
+
 export async function getLast24h(req: Request, res: Response, next: NextFunction) {
   try {
     const cacheResults = await redisClient.get("readings24h");
@@ -123,8 +178,13 @@ export const postReading = [
 
       sendEventsToAll(result); // push the new reading to all SSE clients
 
-      // invalidate cache
+      // invalidate today's cache
       redisClient.del("readings24h");
+
+      // invalidate either given month's cache or current month's cache
+      const year = new Date().getUTCFullYear();
+      const month = createdAt?.getUTCMonth() ?? new Date().getUTCMonth();
+      redisClient.del(`${year}-${month}`);
     } catch (error) {
       console.error(error);
       return res.status(500).send("500 Internal Server Error");
