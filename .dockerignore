@@ -3,10 +3,10 @@
 .env.example
 .prettierrc.json
 .vscode
-fly.toml
+# fly.toml
 dist
 docker-compose.yml
-Dockerfile
+Dockerfile.ci
 LICENSE
 node_modules
 todo.txt
