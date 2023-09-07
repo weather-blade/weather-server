@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { redisClient } from "../db/redis.js";
 import { randomIntFromInterval } from "../utils/functions.js";
-import type { ITimePointForecast, ITimePointSunrise } from "../types/MET.js";
+import type { ITimePointForecast, ISunriseSunset } from "../types/MET.js";
 
 export async function getForecastSunrise(req: Request, res: Response, next: NextFunction) {
   try {
@@ -59,7 +59,6 @@ class MET {
             "User-Agent": "github.com/Bladesheng/weather-station-frontend keadr23@gmail.com",
             "If-Modified-Since": MET._lastModified, // as per MET.no ToS, to not repeatedly download the same data
           },
-          cache: "default", // return response from cache (if it's not expired)
         });
 
         if (response.ok) {
@@ -110,40 +109,30 @@ class MET {
       const cacheResults = await redisClient.get("sunrise");
 
       if (cacheResults) {
-        const sunriseTimeSeries: ITimePointSunrise[] = JSON.parse(cacheResults);
+        const sunriseTimeSeries: ISunriseSunset = JSON.parse(cacheResults);
         return sunriseTimeSeries;
       } else {
-        const now = new Date();
-        const year = now.getUTCFullYear();
-        const month = now.getUTCMonth() + 1; // indexed from 0
-        const monthPadded = String(month).padStart(2, "0");
-        const day = now.getUTCDate();
-        const dayPadded = String(day).padStart(2, "0");
-        const OFFSET = "+02:00";
-        const DAYS_FORWARD = 2; // how many days should we fetch
+        const url = `https://api.met.no/weatherapi/sunrise/3.0/sun?lat=${MET.LATITUDE}&lon=${MET.LONGITUDE}`;
 
-        const url = `https://api.met.no/weatherapi/sunrise/2.0/.json?lat=${MET.LATITUDE}&lon=${MET.LONGITUDE}&date=${year}-${monthPadded}-${dayPadded}&offset=${OFFSET}&days=${DAYS_FORWARD}`;
-
-        const response = await fetch(url, {
-          method: "GET",
-          cache: "default", // return response from cache (if it's not expired)
-        });
-
+        const response = await fetch(url);
         const responseData = await response.json();
-        const sunriseTimeSeries: ITimePointSunrise[] = responseData.location.time;
+        const sunriseSunset: ISunriseSunset = {
+          sunrise: responseData.properties.sunrise.time,
+          sunset: responseData.properties.sunset.time,
+        };
 
         const next2AM = new Date();
         next2AM.setHours(2, 0, 0, 0); // 2 AM
         // next 2 AM will probably be tommorow
-        if (now > next2AM) {
+        if (new Date() > next2AM) {
           next2AM.setDate(next2AM.getDate() + 1); // tommorow's date
         }
 
-        redisClient.set("sunrise", JSON.stringify(sunriseTimeSeries), {
+        redisClient.set("sunrise", JSON.stringify(sunriseSunset), {
           EX: next2AM.getTime() - Date.now(),
         });
 
-        return sunriseTimeSeries;
+        return sunriseSunset;
       }
     } catch (error) {
       console.error(error);
