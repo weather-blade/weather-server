@@ -30,24 +30,7 @@ export type ITimePointForecast = {
   time: Date;
 };
 
-export type ITimePointSunrise = {
-  date: string | Date;
-  sunrise: {
-    desc: string;
-    time: Date;
-  };
-  sunset: {
-    desc: string;
-    time: Date;
-  };
-
-  high_moon: object;
-  low_moon: object;
-  moonphase: object;
-  moonposition: object;
-  moonrise: object;
-  moonset: object;
-  moonshadow: object;
-  solarmidnight: object;
-  solarnoon: object;
+export type ISunriseSunset = {
+  sunrise: Date;
+  sunset: Date;
 };
