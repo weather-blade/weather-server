@@ -5,7 +5,6 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install curl -y
 RUN curl -L https://fly.io/install.sh | FLYCTL_INSTALL=/usr/local sh
 
-RUN mkdir /app
 WORKDIR /app
 
 COPY . .
