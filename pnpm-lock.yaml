@@ -38,6 +38,9 @@ dependencies:
   morgan:
     specifier: ^1.10.0
     version: 1.10.0
+  prisma:
+    specifier: ^5.3.1
+    version: 5.3.1
   redis:
     specifier: ^4.6.8
     version: 4.6.8
@@ -79,9 +82,6 @@ devDependencies:
   prettier-plugin-prisma:
     specifier: ^5.0.0
     version: 5.0.0(prettier@3.0.3)
-  prisma:
-    specifier: ^5.3.1
-    version: 5.3.1
   ts-node:
     specifier: ^10.9.1
     version: 10.9.1(@types/node@20.6.2)(typescript@5.2.2)
@@ -234,6 +234,7 @@ packages:
   /@prisma/engines@5.3.1:
     resolution: {integrity: sha512-6QkILNyfeeN67BNEPEtkgh3Xo2tm6D7V+UhrkBbRHqKw9CTaz/vvTP/ROwYSP/3JT2MtIutZm/EnhxUiuOPVDA==}
     requiresBuild: true
+    dev: false
 
   /@prisma/prisma-schema-wasm@4.17.0-26.6b0aef69b7cdfc787f822ecd7cdc76d5f1991584:
     resolution: {integrity: sha512-JFdsnSgBPN8reDTLOI9Vh/6ccCb2aD1LbY/LWQnkcIgNo6IdpzvuM+qRVbBuA6IZP2SdqQI8Lu6RL2P8EFBQUA==}
@@ -2406,6 +2407,7 @@ packages:
     requiresBuild: true
     dependencies:
       '@prisma/engines': 5.3.1
+    dev: false
 
   /proxy-addr@2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
