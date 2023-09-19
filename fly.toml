@@ -13,7 +13,7 @@ processes = []
   auto_rollback = true
 
 [deploy]
-  release_command = "pnpm dlx prisma migrate deploy"
+  release_command = "pnpm prisma migrate deploy"
 
 [[services]]
   http_checks = []
