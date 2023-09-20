@@ -1,24 +1,25 @@
 FROM node:18.17.1-bullseye-slim as builder
 RUN apt-get update && apt-get upgrade -y
+RUN npm -g install pnpm
 
-RUN mkdir /app
 WORKDIR /app
 
 # get dependencies first separately
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 # You have to copy schema before you run install for reasons unknown to man. Otherwise running build will fail.
 COPY prisma/schema.prisma ./
 ENV NODE_ENV production
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
 # the rest of the source code needed for building
 COPY . .
 
-RUN npm run build
+RUN pnpm run build
 
 
 FROM node:18.17.1-bullseye-slim as deployment
 RUN apt-get update && apt-get upgrade -y
+RUN npm -g install pnpm
 
 RUN apt-get install redis-server -y
 
@@ -26,7 +27,7 @@ RUN apt-get install redis-server -y
 COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/package.json /app/package.json
-COPY --from=builder /app/package-lock.json /app/package-lock.json
+COPY --from=builder /app/pnpm-lock.yaml /app/pnpm-lock.yaml
 COPY --from=builder /app/prisma /app/prisma
 
 WORKDIR /app
