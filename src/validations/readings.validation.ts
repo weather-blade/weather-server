@@ -85,3 +85,28 @@ export function getDate(req: Request) {
     return undefined;
   }
 }
+
+export const yearMonth: Schema = {
+  year: {
+    in: ["query"],
+    isInt: {
+      options: {
+        min: 2000,
+        max: 2100,
+      },
+    },
+    trim: true,
+    escape: true,
+  },
+  month: {
+    in: ["query"],
+    isInt: {
+      options: {
+        min: 1,
+        max: 12,
+      },
+    },
+    trim: true,
+    escape: true,
+  },
+};

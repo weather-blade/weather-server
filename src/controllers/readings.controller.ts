@@ -3,7 +3,11 @@ import { prisma } from "../db/prisma.js";
 import { sendEventsToAll } from "../controllers/readingsEvents.controller.js";
 import * as readingsValidator from "../validations/readings.validation.js";
 import { redisClient } from "../db/redis.js";
+import { getFirstLastDay } from "../utils/functions.js";
+import { lttb } from "../utils/lttb.js";
 import type { Request, Response, NextFunction } from "express";
+
+const WEEK_SECONDS = 604800;
 
 // GET
 
@@ -45,39 +49,40 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
   }
 }
 
-export async function getMonth(req: Request, res: Response, next: NextFunction) {
-  try {
-    const WEEK_SECONDS = 604800;
+export const getMonthFull = [
+  checkSchema(readingsValidator.yearMonth),
 
-    const year = Number(req.query.year);
-    const month = Number(req.query.month);
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        console.error(errors);
+        return res.status(400).json(errors);
+      }
 
-    const firstDay = new Date();
-    // -1 because months are 0 indexed
-    // 1 to get fist day of that month
-    firstDay.setUTCFullYear(year, month - 1, 1);
+      const year = parseInt(req.query.year as string);
+      const month = parseInt(req.query.month as string);
 
-    const lastDay = new Date(firstDay);
-    lastDay.setUTCMonth(firstDay.getMonth() + 1); // the next month
-    lastDay.setUTCDate(0); // 0 will allways give you last day of the previous month
+      const { firstDay, lastDay } = getFirstLastDay(year, month);
 
-    if (isNaN(firstDay.getTime()) || isNaN(lastDay.getTime())) {
-      return res.status(400).send("400 Bad Request (wrong year / month format)");
-    }
+      if (isNaN(firstDay.getTime()) || isNaN(lastDay.getTime())) {
+        return res.status(400).send("400 Bad Request (wrong year / month format)");
+      }
 
-    const cacheName = `${firstDay.getUTCFullYear()}-${firstDay.getUTCMonth()}`;
-    const cacheResults = await redisClient.get(cacheName);
+      const cacheName = `month-full-${firstDay.getUTCFullYear()}-${firstDay.getUTCMonth()}`;
+      const cacheResults = await redisClient.get(cacheName);
 
-    if (Date.now() > lastDay.getTime()) {
-      // cache in browser for 7 days if the month already passed
-      // (because readings from previous months shouldn't change)
-      res.set("Cache-Control", `max-age=${WEEK_SECONDS}`);
-    }
+      if (Date.now() > lastDay.getTime()) {
+        // cache in browser for 7 days if the month already passed
+        // (because readings from previous months shouldn't change)
+        res.set("Cache-Control", `max-age=${WEEK_SECONDS}`);
+      }
 
-    if (cacheResults) {
-      const readings = JSON.parse(cacheResults);
-      res.json(readings);
-    } else {
+      if (cacheResults) {
+        const readings = JSON.parse(cacheResults);
+        return res.json(readings);
+      }
+
       const readings = await prisma.readings.findMany({
         where: {
           createdAt: {
@@ -93,12 +98,107 @@ export async function getMonth(req: Request, res: Response, next: NextFunction) 
       redisClient.set(cacheName, JSON.stringify(readings), {
         EX: WEEK_SECONDS, // expire after 7 days
       });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send("500 Internal Server Error");
     }
-  } catch (error) {
-    console.error(error);
-    return res.status(500).send("500 Internal Server Error");
-  }
-}
+  },
+];
+
+export const getMonthDecimated = [
+  checkSchema(readingsValidator.yearMonth),
+
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        console.error(errors);
+        return res.status(400).json(errors);
+      }
+
+      const year = parseInt(req.query.year as string);
+      const month = parseInt(req.query.month as string);
+
+      const { firstDay, lastDay } = getFirstLastDay(year, month);
+
+      if (isNaN(firstDay.getTime()) || isNaN(lastDay.getTime())) {
+        return res.status(400).send("400 Bad Request (wrong year / month format)");
+      }
+
+      const cacheName = `month-decimated-${firstDay.getUTCFullYear()}-${firstDay.getUTCMonth()}`;
+      const cacheResults = await redisClient.get(cacheName);
+
+      if (Date.now() > lastDay.getTime()) {
+        // cache in browser for 7 days if the month already passed
+        // (because readings from previous months shouldn't change)
+        res.set("Cache-Control", `max-age=${WEEK_SECONDS}`);
+      }
+
+      if (cacheResults) {
+        const readings = JSON.parse(cacheResults);
+        return res.json(readings);
+      }
+
+      const readings = await prisma.readings.findMany({
+        where: {
+          createdAt: {
+            gte: firstDay,
+            lte: lastDay,
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      // lttb requires arrays of x and y value
+      const temperature_BMP_Full = readings.map<[number, number]>((reading) => {
+        return [reading.createdAt.getTime(), reading.temperature_BMP];
+      });
+      const temperature_DHT_Full = readings.map<[number, number]>((reading) => {
+        return [reading.createdAt.getTime(), reading.temperature_DHT];
+      });
+      const humidity_DHT_Full = readings.map<[number, number]>((reading) => {
+        return [reading.createdAt.getTime(), reading.humidity_DHT];
+      });
+      const pressure_BMP_Full = readings.map<[number, number]>((reading) => {
+        return [reading.createdAt.getTime(), reading.pressure_BMP];
+      });
+
+      // Usually, there is ~8000 readings per month.
+      // With that many points, the browser starts to lag when rendering the chart.
+      // 1000 readings seems to be a nice compromise between browser lag and data resolution.
+      const DONWSAMPLED_COUNT = 1000;
+      const temperature_BMP_Trimmed = lttb(temperature_BMP_Full, DONWSAMPLED_COUNT);
+      const temperature_DHT_Trimmed = lttb(temperature_DHT_Full, DONWSAMPLED_COUNT);
+      const humidity_DHT_Trimmed = lttb(humidity_DHT_Full, DONWSAMPLED_COUNT);
+      const pressure_BMP_Trimmed = lttb(pressure_BMP_Full, DONWSAMPLED_COUNT);
+
+      // You can downsample only 1 X and Y value at a time.
+      // Lttb will select points from different dates (X) from each dataset.
+      // If you save the results into the same time point (X), some values will then be slightly shifted.
+      // The alternative is to use separate X axis for each dataset. But then the chart tooltip won't work properly...
+      const trimmedReadings = temperature_BMP_Trimmed.map((_, i) => {
+        return {
+          id: i,
+          createdAt: temperature_BMP_Trimmed[i][0],
+
+          temperature_BMP: temperature_BMP_Trimmed[i][1],
+          temperature_DHT: temperature_DHT_Trimmed[i][1],
+          humidity_DHT: humidity_DHT_Trimmed[i][1],
+          pressure_BMP: pressure_BMP_Trimmed[i][1],
+        };
+      });
+
+      res.json(trimmedReadings);
+
+      redisClient.set(cacheName, JSON.stringify(trimmedReadings), {
+        EX: WEEK_SECONDS, // expire after 7 days
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send("500 Internal Server Error");
+    }
+  },
+];
 
 export async function getLast24h(req: Request, res: Response, next: NextFunction) {
   try {
@@ -182,9 +282,14 @@ export const postReading = [
       redisClient.del("readings24h");
 
       // invalidate either given month's cache or current month's cache
-      const year = new Date().getUTCFullYear();
+      const year = createdAt?.getUTCFullYear() ?? new Date().getUTCFullYear();
       const month = createdAt?.getUTCMonth() ?? new Date().getUTCMonth();
-      redisClient.del(`${year}-${month}`);
+
+      const cacheNameFull = `month-full-${year}-${month}`;
+      const cacheNameDecimated = `month-decimated-${year}-${month}`;
+
+      redisClient.del(cacheNameFull);
+      redisClient.del(cacheNameDecimated);
     } catch (error) {
       console.error(error);
       return res.status(500).send("500 Internal Server Error");
