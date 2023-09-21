@@ -3,7 +3,7 @@ import { prisma } from "../db/prisma.js";
 import { sendEventsToAll } from "../controllers/readingsEvents.controller.js";
 import { ReadingsValidation } from "../validations/readings.validation.js";
 import { redisClient } from "../db/redis.js";
-import { getFirstLastDay } from "../utils/functions.js";
+import { UtilFns } from "../utils/functions.js";
 import { lttb } from "../utils/lttb.js";
 import type { Request, Response, NextFunction } from "express";
 
@@ -64,7 +64,7 @@ export class ReadingsController {
         const year = parseInt(req.query.year as string);
         const month = parseInt(req.query.month as string);
 
-        const { firstDay, lastDay } = getFirstLastDay(year, month);
+        const { firstDay, lastDay } = UtilFns.getFirstLastDay(year, month);
 
         if (isNaN(firstDay.getTime()) || isNaN(lastDay.getTime())) {
           return res.status(400).send("400 Bad Request (wrong year / month format)");
@@ -120,7 +120,7 @@ export class ReadingsController {
         const year = parseInt(req.query.year as string);
         const month = parseInt(req.query.month as string);
 
-        const { firstDay, lastDay } = getFirstLastDay(year, month);
+        const { firstDay, lastDay } = UtilFns.getFirstLastDay(year, month);
 
         if (isNaN(firstDay.getTime()) || isNaN(lastDay.getTime())) {
           return res.status(400).send("400 Bad Request (wrong year / month format)");
