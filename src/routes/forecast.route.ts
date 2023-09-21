@@ -1,8 +1,8 @@
 import express from "express";
-import * as forecastController from "../controllers/forecast.controller.js";
+import { ForecastController } from "../controllers/forecast.controller.js";
 
 const router = express.Router();
 
-router.get("/", forecastController.getForecastSunrise);
+router.get("/", ForecastController.getForecastSunrise);
 
 export default router;
