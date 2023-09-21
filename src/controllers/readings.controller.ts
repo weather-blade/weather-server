@@ -1,7 +1,7 @@
 import { checkSchema, validationResult } from "express-validator";
 import { prisma } from "../db/prisma.js";
 import { sendEventsToAll } from "../controllers/readingsEvents.controller.js";
-import * as readingsValidator from "../validations/readings.validation.js";
+import { ReadingsValidation } from "../validations/readings.validation.js";
 import { redisClient } from "../db/redis.js";
 import { getFirstLastDay } from "../utils/functions.js";
 import { lttb } from "../utils/lttb.js";
@@ -50,7 +50,7 @@ export async function getTimeRange(req: Request, res: Response, next: NextFuncti
 }
 
 export const getMonthFull = [
-  checkSchema(readingsValidator.yearMonth),
+  checkSchema(ReadingsValidation.yearMonth),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -106,7 +106,7 @@ export const getMonthFull = [
 ];
 
 export const getMonthDecimated = [
-  checkSchema(readingsValidator.yearMonth),
+  checkSchema(ReadingsValidation.yearMonth),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -237,8 +237,8 @@ export async function getLast24h(req: Request, res: Response, next: NextFunction
 // POST
 
 export const postReading = [
-  checkSchema(readingsValidator.reading),
-  checkSchema(readingsValidator.readingDate),
+  checkSchema(ReadingsValidation.reading),
+  checkSchema(ReadingsValidation.readingDate),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -257,7 +257,7 @@ export const postReading = [
       const pressure_BMP = parseFloat(req.body.pressure_BMP);
       const humidity_DHT = parseFloat(req.body.humidity_DHT);
 
-      const createdAt = readingsValidator.getDate(req);
+      const createdAt = ReadingsValidation.getDate(req);
 
       const result = await prisma.readings.create({
         data: {
@@ -300,9 +300,9 @@ export const postReading = [
 // PUT
 
 export const upsertReading = [
-  checkSchema(readingsValidator.readingId),
-  checkSchema(readingsValidator.readingDateRequired),
-  checkSchema(readingsValidator.reading),
+  checkSchema(ReadingsValidation.readingId),
+  checkSchema(ReadingsValidation.readingDateRequired),
+  checkSchema(ReadingsValidation.reading),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -323,7 +323,7 @@ export const upsertReading = [
       const pressure_BMP = parseFloat(req.body.pressure_BMP);
       const humidity_DHT = parseFloat(req.body.humidity_DHT);
 
-      const createdAt = readingsValidator.getDate(req);
+      const createdAt = ReadingsValidation.getDate(req);
 
       const result = await prisma.readings.upsert({
         where: { id: id },
@@ -357,8 +357,8 @@ export const upsertReading = [
 // DELETE
 
 export const deleteReading = [
-  checkSchema(readingsValidator.readingId),
-  checkSchema(readingsValidator.readingIdExists),
+  checkSchema(ReadingsValidation.readingId),
+  checkSchema(ReadingsValidation.readingIdExists),
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
