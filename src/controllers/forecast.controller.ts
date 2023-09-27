@@ -1,20 +1,22 @@
 import type { Request, Response, NextFunction } from "express";
 import { redisClient } from "../db/redis.js";
-import { randomIntFromInterval } from "../utils/functions.js";
+import { UtilFns } from "../utils/functions.js";
 import type { ITimePointForecast, ISunriseSunset } from "../types/MET.js";
 
-export async function getForecastSunrise(req: Request, res: Response, next: NextFunction) {
-  try {
-    const [forecast, sunrise] = await Promise.all([MET.fetchForecast(), MET.fetchSunrise()]);
+export class ForecastController {
+  public static async getForecastSunrise(req: Request, res: Response, next: NextFunction) {
+    try {
+      const [forecast, sunrise] = await Promise.all([MET.fetchForecast(), MET.fetchSunrise()]);
 
-    res.set("Expires", MET.forecastExpires.toUTCString());
-    res.json({
-      forecast: forecast,
-      sunrise: sunrise,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).send("500 Internal Server Error");
+      res.set("Expires", MET.forecastExpires.toUTCString());
+      res.json({
+        forecast: forecast,
+        sunrise: sunrise,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send("500 Internal Server Error");
+    }
   }
 }
 
@@ -80,7 +82,7 @@ class MET {
           expiresHeader = new Date(Date.now() + 40 * 60 * 1000).toISOString();
         }
         // add random delay to the actual expiration timer (MET TOS)
-        const randomDelay = randomIntFromInterval(3, 6);
+        const randomDelay = UtilFns.randomIntFromInterval(3, 6);
         MET._forecastExpires = new Date(
           new Date(expiresHeader).getTime() + randomDelay * 60 * 1000
         );

@@ -1,21 +1,21 @@
 import express from "express";
 import { authenticate } from "../middleware/authenticate.js";
-import * as readingsController from "../controllers/readings.controller.js";
+import { ReadingsController } from "../controllers/readings.controller.js";
 import { readingsEventsController } from "../controllers/readingsEvents.controller.js";
 
 const router = express.Router();
 
-router.get("/", readingsController.getAll);
-router.post("/", authenticate, ...readingsController.postReading);
-router.put("/", authenticate, ...readingsController.upsertReading);
-router.delete("/", authenticate, ...readingsController.deleteReading);
+router.get("/", ReadingsController.getAll);
+router.post("/", authenticate, ...ReadingsController.postReading);
+router.put("/", authenticate, ...ReadingsController.upsertReading);
+router.delete("/", authenticate, ...ReadingsController.deleteReading);
 
 router.get("/events", readingsEventsController); // Server-sent events
 
-router.get("/range", readingsController.getTimeRange);
-router.get("/month/full", ...readingsController.getMonthFull);
-router.get("/month/decimated", ...readingsController.getMonthDecimated);
+router.get("/range", ReadingsController.getTimeRange);
+router.get("/month/full", ...ReadingsController.getMonthFull);
+router.get("/month/decimated", ...ReadingsController.getMonthDecimated);
 
-router.get("/24h", readingsController.getLast24h);
+router.get("/24h", ReadingsController.getLast24h);
 
 export default router;

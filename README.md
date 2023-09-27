@@ -21,7 +21,7 @@ The database and API is hosted on fly.io
 - Install packages:
 
 ```sh
-npm install
+pnpm install
 ```
 
 - Now you have 2 options:
@@ -31,22 +31,22 @@ npm install
 - Push Prisma schema to the database and seed it:
 
 ```sh
-npm run db:push
-npm run db:seed
+pnpm run db:push
+pnpm run db:seed
 ```
 
 - Run the dev server:
 
 ```sh
-npm run dev
+pnpm run dev
 ```
 
-### b) Dockerized dev server + dockerized database
+### b) Dev server + database in docker
 
-- Run the server and database container:
+- Run dev server and database container:
 
 ```sh
-npm run docker
+pnpm run docker
 ```
 
 - Connect to the container:
@@ -58,8 +58,8 @@ docker compose exec app sh
 - Run this inside the container to push the Prisma schema to the database and seed it:
 
 ```sh
-npm run db:push
-npm run db:seed
+pnpm run db:push
+pnpm run db:seed
 ```
 
 Example API requests in [Postman](https://www.postman.com/telecoms-operator-36486599/workspace/weather-station/request/24296961-8ced04cb-946c-4b14-909f-a094c9b36d4f)
@@ -67,6 +67,6 @@ Example API requests in [Postman](https://www.postman.com/telecoms-operator-3648
 Formatting with `Prettier` and linting with `ESLint`:
 
 ```sh
-npm run format
-npm run lint
+pnpm run format
+pnpm run lint
 ```
