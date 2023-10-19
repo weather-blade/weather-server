@@ -8,6 +8,7 @@ services:
       NODE_ENV: dev
     ports:
       - 8080:8080
+      - 5555:5555 # prisma studio
     command: bash -c "service redis-server start && pnpm run dev"
 
   db:

@@ -22,3 +22,9 @@ model Readings {
   pressure_BMP    Float
   humidity_DHT    Float
 }
+
+model PushSubscriptions {
+  id               Int      @id @default(autoincrement())
+  createdAt        DateTime @default(now())
+  pushSubscription Json
+}

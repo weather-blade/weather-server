@@ -7,7 +7,7 @@ export function cors(req: Request, res: Response, next: NextFunction) {
   const resOrigin = ALLOWED_ORIGINS.indexOf(origin) >= 0 ? origin : ALLOWED_ORIGINS[0];
 
   res.header("Access-Control-Allow-Origin", resOrigin);
-  res.header("Access-Control-Allow-Headers", "password, short");
+  res.header("Access-Control-Allow-Headers", "password, short, Content-Type");
   res.header("Access-Control-Max-Age", "86400"); // skip recurent preflight requests for 24h
 
   next();

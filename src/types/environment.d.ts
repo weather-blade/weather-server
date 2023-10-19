@@ -4,6 +4,9 @@ declare global {
       PORT: string;
       DATABASE_URL: string;
       API_PASSWORD: string;
+
+      VAPID_PUBLIC_KEY: string;
+      VAPID_PRIVATE_KEY: string;
     }
   }
 }
