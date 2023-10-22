@@ -4,6 +4,9 @@ import { UtilFns } from "../utils/functions.js";
 import type { ITimePointForecast, ISunriseSunset } from "../types/MET.js";
 
 export class ForecastController {
+  /**
+   * Returns full forecast and sunrise data
+   */
   public static async getForecastSunrise(req: Request, res: Response, next: NextFunction) {
     try {
       const [forecast, sunrise] = await Promise.all([MET.fetchForecast(), MET.fetchSunrise()]);
@@ -12,6 +15,53 @@ export class ForecastController {
       res.json({
         forecast: forecast,
         sunrise: sunrise,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send("500 Internal Server Error");
+    }
+  }
+
+  /**
+   * Creates notification based on today's forecast
+   */
+  public static async getNotification(req: Request, res: Response, next: NextFunction) {
+    try {
+      const forecast = await MET.fetchForecast();
+      if (forecast === undefined) {
+        throw new Error("Forecast is undefined");
+      }
+
+      // convert date strings to date objects
+      for (const timePoint of forecast) {
+        timePoint.time = new Date(timePoint.time);
+      }
+
+      // we care only about today
+      const forecastToday = splitByDays(forecast)[0];
+
+      const precipitationTotal = forecastToday.reduce((acc, timePoint) => {
+        return acc + getPrecipitation(timePoint);
+      }, 0);
+
+      const tempsToday = forecastToday.map((timePoint) => {
+        return timePoint.data.instant.details.air_temperature;
+      });
+      const tempMax = Math.round(Math.max(...tempsToday));
+      const tempMin = Math.round(Math.min(...tempsToday));
+
+      let body = `Teplota: ${tempMax}˚ / ${tempMin}˚\n`;
+      if (precipitationTotal > 0) {
+        body += `Srážky: ${UtilFns.round(precipitationTotal, 1)} mm`;
+      }
+
+      const icon = getIconCode(forecastToday[0]);
+
+      res.json({
+        title: "Předpověď",
+        icon,
+        body,
+        precipitationTotal,
       });
     } catch (error) {
       console.error(error);
@@ -140,4 +190,55 @@ class MET {
       console.error(error);
     }
   }
+}
+
+/**
+ * Groups forecast by individual days into arrays
+ */
+function splitByDays(forecast: ITimePointForecast[]) {
+  let currentDay = forecast[0].time.getDate();
+  const days: ITimePointForecast[][] = [[]];
+
+  for (const timePoint of forecast) {
+    if (timePoint.time.getDate() !== currentDay) {
+      // create new day sub-array
+      days.push([]);
+      currentDay = timePoint.time.getDate();
+    }
+
+    // add the timepoint to the last sub-array
+    days[days.length - 1].push(timePoint);
+  }
+
+  return days;
+}
+
+/**
+ * @returns precipitation of given timePoint (prefers shortest prediction)
+ */
+function getPrecipitation(timePoint: ITimePointForecast) {
+  const precipitation1hr = timePoint.data?.next_1_hours?.details?.precipitation_amount;
+  const precipitation6hr = timePoint.data?.next_6_hours?.details?.precipitation_amount;
+
+  // Preferably use the 1 hour data. If not available, use the 6 hour data.
+  const precipitation = precipitation1hr ?? precipitation6hr ?? 0;
+
+  return precipitation;
+}
+
+/**
+ * @returns icon code of given timePoint (prefers longest prediction)
+ */
+function getIconCode(timePoint: ITimePointForecast) {
+  const icon1hr = timePoint.data?.next_1_hours?.summary?.symbol_code;
+  const icon6hr = timePoint.data?.next_6_hours?.summary?.symbol_code;
+  const icon12hr = timePoint.data?.next_12_hours?.summary?.symbol_code;
+
+  if (icon1hr === undefined && icon6hr === undefined && icon12hr === undefined) {
+    console.warn("Missing precipitation icon:", timePoint);
+  }
+
+  const iconCode = icon12hr ?? icon6hr ?? icon1hr ?? "heavysnowshowersandthunder_day";
+
+  return iconCode;
 }

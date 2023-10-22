@@ -21,4 +21,12 @@ export class UtilFns {
 
     return { firstDay, lastDay };
   }
+
+  /**
+   * @returns original number rounded to certain number of decimal place
+   */
+  public static round(originalNumber: number, decimalPlaces: number) {
+    const x = 10 ** decimalPlaces;
+    return Math.round(originalNumber * x) / x;
+  }
 }

@@ -5,6 +5,7 @@ import { PushController } from "../controllers/push.controller.js";
 const router = express.Router();
 
 router.get("/", ForecastController.getForecastSunrise);
+router.get("/notification", ForecastController.getNotification);
 
 router.get("/push/vapidPublicKey", PushController.getPublicKey);
 router.post("/push/subscribe", ...PushController.subscribe);
