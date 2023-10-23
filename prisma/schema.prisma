@@ -2,8 +2,10 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-1.1.x"]
+  provider = "prisma-client-js"
+
+  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#linux-debian-x86_64
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 
   // https://github.com/prisma/prisma/issues/6603
 }
