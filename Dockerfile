@@ -27,9 +27,10 @@ FROM node:18.17.1-bookworm-slim as deployment
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install ca-certificates -y
 RUN apt-get install cron -y
+RUN apt-get install redis-server -y
 RUN npm -g install pnpm@8.7.6
 
-RUN apt-get install redis-server -y
+WORKDIR /app
 
 # keep only files needed to run the server
 COPY --from=builder /app/dist /app/dist
@@ -40,10 +41,10 @@ COPY --from=builder /app/prisma /app/prisma
 COPY --from=builder /app/forecast-notification /app/forecast-notification
 COPY --from=builder /app/crontab.txt /app/crontab.txt
 
-WORKDIR /app
 ENV NODE_ENV production
 LABEL fly_launch_runtime="nodejs"
 
+# install the crontab
 RUN chmod +x forecast-notification
 RUN crontab crontab.txt
 
