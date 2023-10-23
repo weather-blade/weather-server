@@ -1,4 +1,4 @@
-FROM node:18.17.1-bullseye-slim as builder
+FROM node:18.17.1-bookworm-slim as builder
 RUN apt-get update && apt-get upgrade -y
 RUN npm -g install pnpm@8.7.6
 
@@ -17,7 +17,7 @@ COPY . .
 RUN pnpm run build
 
 
-FROM node:18.17.1-bullseye-slim as deployment
+FROM node:18.17.1-bookworm-slim as deployment
 RUN apt-get update && apt-get upgrade -y
 RUN npm -g install pnpm@8.7.6
 
