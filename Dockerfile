@@ -1,8 +1,14 @@
 FROM node:18.17.1-bookworm-slim as builder
 RUN apt-get update && apt-get upgrade -y
+RUN apt-get install ca-certificates -y
+RUN apt-get install curl -y
 RUN npm -g install pnpm@8.7.6
 
 WORKDIR /app
+
+# binary that sends out notifications
+# https://github.com/Bladesheng/weather-station-notifications
+RUN curl -LO https://github.com/Bladesheng/weather-station-notifications/releases/download/v1/forecast-notification
 
 # get dependencies first separately
 COPY package.json pnpm-lock.yaml ./
@@ -19,6 +25,8 @@ RUN pnpm run build
 
 FROM node:18.17.1-bookworm-slim as deployment
 RUN apt-get update && apt-get upgrade -y
+RUN apt-get install ca-certificates -y
+RUN apt-get install cron -y
 RUN npm -g install pnpm@8.7.6
 
 RUN apt-get install redis-server -y
@@ -29,9 +37,14 @@ COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/package.json /app/package.json
 COPY --from=builder /app/pnpm-lock.yaml /app/pnpm-lock.yaml
 COPY --from=builder /app/prisma /app/prisma
+COPY --from=builder /app/forecast-notification /app/forecast-notification
+COPY --from=builder /app/crontab.txt /app/crontab.txt
 
 WORKDIR /app
 ENV NODE_ENV production
 LABEL fly_launch_runtime="nodejs"
 
-CMD service redis-server start & npm run start
+RUN chmod +x forecast-notification
+RUN crontab crontab.txt
+
+CMD cron & service redis-server start & npm run start
