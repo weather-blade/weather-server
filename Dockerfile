@@ -48,4 +48,6 @@ LABEL fly_launch_runtime="nodejs"
 RUN chmod +x forecast-notification
 RUN crontab crontab.txt
 
-CMD cron & service redis-server start & npm run start
+# copy env variables somewhere, where cron can access them
+# https://stackoverflow.com/questions/65884276
+CMD printenv > /etc/environment && cron && service redis-server start && npm run start
