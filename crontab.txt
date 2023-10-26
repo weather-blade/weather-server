@@ -1,2 +1,2 @@
 # every morning at 04:00
-0 4 * * * /app/forecast-notification >> /app/log.txt 2>&1
+0 4 * * * /app/forecast-notification >> /app/cron.log 2>&1
