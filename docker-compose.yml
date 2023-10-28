@@ -2,6 +2,8 @@ services:
   redis:
     image: redis:7.2.2-bookworm
     restart: unless-stopped
+    networks:
+      - 'default'
 
   db:
     image: postgres:15.2
@@ -12,28 +14,26 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: weather_station_dev
+    networks:
+      - 'default'
 
   app:
     build: .
     restart: unless-stopped
-    ports:
-      - 8080:8080
-      # - 5555:5555 # prisma studio
+    # ports:
+    # - 8080:8080
+    # - 5555:5555 # prisma studio
     depends_on:
       - redis
       - db
     env_file:
       - .env
-
-  nginx:
-    image: nginx:1.25.3-bookworm
-    restart: unless-stopped
-    ports:
-      - 80:80
-    depends_on:
-      - app
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    environment:
+      - VIRTUAL_HOST=weatherapi.bladesheng.com,www.weatherapi.bladesheng.com
+      - VIRTUAL_PORT=8080
+    networks:
+      - 'nginx_proxy_net'
+      - 'default'
 
   cron:
     build:
@@ -44,6 +44,12 @@ services:
       NODE_ENV: production
     env_file:
       - .env
+    networks:
+      - 'default'
 
 volumes:
   db-data:
+
+networks:
+  nginx_proxy_net:
+    external: true
