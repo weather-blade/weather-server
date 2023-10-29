@@ -30,6 +30,7 @@ services:
       - .env
     environment:
       - VIRTUAL_HOST=weatherapi.bladesheng.com,www.weatherapi.bladesheng.com
+      - LETSENCRYPT_HOST=weatherapi.bladesheng.com,www.weatherapi.bladesheng.com
       - VIRTUAL_PORT=8080
     networks:
       - 'nginx_proxy_net'
