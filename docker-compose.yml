@@ -27,6 +27,19 @@ services:
     volumes:
       - ./SA_key.json:/app/SA_key.json:ro
 
+  notifications:
+    # https://github.com/Bladesheng/weather-station-notifications
+    image: ghcr.io/bladesheng/weather-notifications
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+    env_file:
+      - .env
+
   server:
     image: ghcr.io/bladesheng/weather-server
     restart: unless-stopped
@@ -42,19 +55,6 @@ services:
     networks:
       - 'nginx_proxy_net'
       - 'default'
-
-  notifications:
-    # https://github.com/Bladesheng/weather-station-notifications
-    image: ghcr.io/bladesheng/weather-notifications
-    restart: unless-stopped
-    depends_on:
-      - db
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
-      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
-    env_file:
-      - .env
 
 volumes:
   db-data:
