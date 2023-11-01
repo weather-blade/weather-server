@@ -14,6 +14,7 @@ services:
       POSTGRES_DB: weather_station_dev
 
   db-backup:
+    # https://github.com/Bladesheng/weather-station-db-backup3
     image: ghcr.io/bladesheng/weather-db-backup3:latest
     restart: unless-stopped
     depends_on:
@@ -45,13 +46,16 @@ services:
       - 'nginx_proxy_net'
       - 'default'
 
-  cron:
-    build:
-      context: .
-      dockerfile: cron.Dockerfile
+  notifications:
+    # https://github.com/Bladesheng/weather-station-notifications
+    image: ghcr.io/bladesheng/weather-notifications
     restart: unless-stopped
+    depends_on:
+      - db
     environment:
-      NODE_ENV: production
+      - DATABASE_URL=${DATABASE_URL}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
     env_file:
       - .env
 
