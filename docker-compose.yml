@@ -2,8 +2,6 @@ services:
   redis:
     image: redis:7.2.2-bookworm
     restart: unless-stopped
-    networks:
-      - 'default'
 
   db:
     image: postgres:15.2
@@ -14,8 +12,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: weather_station_dev
-    networks:
-      - 'default'
 
   db-backup:
     image: ghcr.io/bladesheng/weather-db-backup3:latest
@@ -58,8 +54,6 @@ services:
       NODE_ENV: production
     env_file:
       - .env
-    networks:
-      - 'default'
 
 volumes:
   db-data:
