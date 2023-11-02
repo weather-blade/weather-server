@@ -1,6 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
 
-const ALLOWED_ORIGINS = ['https://bladesheng.github.io', 'http://localhost:8000'];
+const ALLOWED_ORIGINS = [
+	'https://bladesheng.github.io',
+	'https://weather-blade.github.io',
+	'http://localhost:8000',
+];
 
 export function cors(req: Request, res: Response, next: NextFunction) {
 	const origin = String(req.headers.origin);
