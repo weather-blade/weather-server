@@ -14,8 +14,8 @@ services:
       POSTGRES_DB: weather_station_dev
 
   db-backup:
-    # https://github.com/Bladesheng/weather-station-db-backup3
-    image: ghcr.io/bladesheng/weather-db-backup3:latest
+    # https://github.com/weather-blade/weather-db-backup
+    image: ghcr.io/weather-blade/weather-db-backup:latest
     restart: unless-stopped
     depends_on:
       - db
@@ -28,8 +28,8 @@ services:
       - ./SA_key.json:/app/SA_key.json:ro
 
   notifications:
-    # https://github.com/Bladesheng/weather-station-notifications
-    image: ghcr.io/bladesheng/weather-notifications
+    # https://github.com/weather-blade/weather-notifications
+    image: ghcr.io/weather-blade/weather-notifications:latest
     restart: unless-stopped
     depends_on:
       - db
