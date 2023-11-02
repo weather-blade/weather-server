@@ -31,6 +31,5 @@ COPY --from=builder /app/pnpm-lock.yaml /app/pnpm-lock.yaml
 COPY --from=builder /app/prisma /app/prisma
 
 ENV NODE_ENV production
-LABEL fly_launch_runtime="nodejs"
 
 CMD pnpm run start
