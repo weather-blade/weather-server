@@ -41,7 +41,7 @@ services:
       - .env
 
   server:
-    image: ghcr.io/bladesheng/weather-server
+    image: ghcr.io/weather-blade/weather-server
     restart: unless-stopped
     depends_on:
       - redis
