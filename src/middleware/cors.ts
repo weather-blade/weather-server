@@ -3,6 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 const ALLOWED_ORIGINS = [
 	'https://bladesheng.github.io',
 	'https://weather-blade.github.io',
+	'https://weather.bladesheng.com',
 	'http://localhost:8000',
 ];
 
