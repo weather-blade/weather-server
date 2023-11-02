@@ -1,4 +1,4 @@
-# weather-station-backend
+# weather-server
 
 ## About this repository
 
