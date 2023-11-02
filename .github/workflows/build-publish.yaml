@@ -19,6 +19,9 @@ concurrency:
   group: "image-build-publish"
   cancel-in-progress: true
 
+permissions:
+  packages: write
+
 jobs:
   job-1:
     name: Build and publish image
