@@ -48,6 +48,11 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+
+      VIRTUAL_HOST: 'weatherapi.bladesheng.com,www.weatherapi.bladesheng.com'
+      LETSENCRYPT_HOST: 'weatherapi.bladesheng.com,www.weatherapi.bladesheng.com'
+      VIRTUAL_PORT: ${PORT}
+
     networks:
       - 'nginx_proxy_net'
       - 'default'
