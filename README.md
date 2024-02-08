@@ -52,19 +52,3 @@ docker compose exec server sh
 pnpm run db:push
 pnpm run db:seed
 ```
-
-## How to run this in production
-
-- Create docker network to connect to the nginx-proxy:
-
-```sh
-docker network create nginx_proxy_net
-```
-
-- Run docker compose
-
-```sh
-docker compose up
-```
-
-- Push Prisma schema to database same as above
