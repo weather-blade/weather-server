@@ -65,13 +65,17 @@ services:
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
 
-      VIRTUAL_HOST: 'weatherapi.bladesheng.com,www.weatherapi.bladesheng.com'
-      LETSENCRYPT_HOST: 'weatherapi.bladesheng.com,www.weatherapi.bladesheng.com'
-      VIRTUAL_PORT: ${PORT}
-
     networks:
-      - 'nginx_proxy_net'
+      - 'web'
       - 'default'
+
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.weatherapi.rule=Host(`weatherapi.bladesheng.com`)'
+      - 'traefik.http.routers.weatherapi.entrypoints=websecure'
+      - 'traefik.http.routers.weatherapi.tls.certresolver=myresolver'
+      - 'traefik.http.services.weatherapi.loadbalancer.server.port=${PORT}'
+
     logging:
       driver: loki
       options:
@@ -81,5 +85,5 @@ volumes:
   db-data:
 
 networks:
-  nginx_proxy_net:
+  web:
     external: true
