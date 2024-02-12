@@ -24,8 +24,6 @@ The production docker-compose just glues all the images together, so that the on
 
 - Clone the repo, then create `.env` file - see [`.env.example`](https://github.com/Bladesheng/weather-station-backend/blob/main/.env.example)
 
-- Install [Grafana Loki Docker driver client](https://grafana.com/docs/loki/latest/send-data/docker-driver/) for logs storage
-
 - Get Google service account JSON key and place it in the same folder as docker-compose - same as [here](https://github.com/weather-blade/weather-db-backup)
 
 - Install packages:
