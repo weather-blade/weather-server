@@ -1,6 +1,6 @@
 import { checkSchema, validationResult } from 'express-validator';
 import { prisma } from '../db/prisma.js';
-import { sendEventsToAll } from '../controllers/readingsEvents.controller.js';
+import { ReadingEventsController } from '../controllers/readingsEvents.controller.js';
 import { ReadingsValidation } from '../validations/readings.validation.js';
 import { redisClient } from '../db/redis.js';
 import { UtilFns } from '../utils/functions.js';
@@ -12,43 +12,58 @@ const WEEK_SECONDS = 604800;
 export class ReadingsController {
 	// GET
 
-	public static async getAll(req: Request, res: Response, next: NextFunction) {
-		try {
-			const readings = await prisma.readings.findMany({
-				orderBy: { createdAt: 'desc' },
-			});
-			res.json(readings);
-		} catch (error) {
-			console.error(error);
-			return res.status(500).send('500 Internal Server Error');
-		}
-	}
+	public static getOne = [
+		checkSchema(ReadingsValidation.readingId),
 
-	public static async getTimeRange(req: Request, res: Response, next: NextFunction) {
-		try {
-			const startTime = new Date(String(req.query.start));
-			const endTime = new Date(String(req.query.end));
+		async (req: Request, res: Response, next: NextFunction) => {
+			try {
+				const id = parseInt(req.params.id);
 
-			if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
-				return res.status(400).send('400 Bad Request (use ISO 8601 time format)');
-			}
-
-			const readings = await prisma.readings.findMany({
-				where: {
-					createdAt: {
-						gte: startTime,
-						lte: endTime,
+				const reading = await prisma.readings.findFirst({
+					where: {
+						id: id,
 					},
-				},
-				orderBy: { createdAt: 'desc' },
-			});
+				});
 
-			res.json(readings);
-		} catch (error) {
-			console.error(error);
-			return res.status(500).send('500 Internal Server Error');
-		}
-	}
+				if (reading === null) {
+					return res.status(404).send('404 Reading not Found');
+				}
+
+				res.json(reading);
+			} catch (error) {
+				console.error(error);
+				return res.status(500).send('500 Internal Server Error');
+			}
+		},
+	];
+
+	public static getTimeRange = [
+		async (req: Request, res: Response, next: NextFunction) => {
+			try {
+				const startTime = new Date(String(req.query.start));
+				const endTime = new Date(String(req.query.end));
+
+				if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+					return res.status(400).send('400 Bad Request (use ISO 8601 time format)');
+				}
+
+				const readings = await prisma.readings.findMany({
+					where: {
+						createdAt: {
+							gte: startTime,
+							lte: endTime,
+						},
+					},
+					orderBy: { createdAt: 'desc' },
+				});
+
+				res.json(readings);
+			} catch (error) {
+				console.error(error);
+				return res.status(500).send('500 Internal Server Error');
+			}
+		},
+	];
 
 	public static getMonthFull = [
 		checkSchema(ReadingsValidation.yearMonth),
@@ -201,39 +216,41 @@ export class ReadingsController {
 		},
 	];
 
-	public static async getLast24h(req: Request, res: Response, next: NextFunction) {
-		try {
-			const cacheResults = await redisClient.get('readings24h');
+	public static getLast24h = [
+		async (req: Request, res: Response, next: NextFunction) => {
+			try {
+				const cacheResults = await redisClient.get('readings24h');
 
-			if (cacheResults) {
-				const readings = JSON.parse(cacheResults);
-				res.json(readings);
-			} else {
-				const startTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // from 24 hours ago (miliseconds)
-				const endTime = new Date(); // up until now
+				if (cacheResults) {
+					const readings = JSON.parse(cacheResults);
+					res.json(readings);
+				} else {
+					const startTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // from 24 hours ago (miliseconds)
+					const endTime = new Date(); // up until now
 
-				const readings = await prisma.readings.findMany({
-					where: {
-						createdAt: {
-							gte: startTime,
-							lte: endTime,
+					const readings = await prisma.readings.findMany({
+						where: {
+							createdAt: {
+								gte: startTime,
+								lte: endTime,
+							},
 						},
-					},
-					orderBy: { createdAt: 'desc' },
-				});
+						orderBy: { createdAt: 'desc' },
+					});
 
-				res.json(readings);
+					res.json(readings);
 
-				redisClient.set('readings24h', JSON.stringify(readings), {
-					EX: 360, // expire after 6 minutes
-					NX: true,
-				});
+					redisClient.set('readings24h', JSON.stringify(readings), {
+						EX: 360, // expire after 6 minutes
+						NX: true,
+					});
+				}
+			} catch (error) {
+				console.error(error);
+				return res.status(500).send('500 Internal Server Error');
 			}
-		} catch (error) {
-			console.error(error);
-			return res.status(500).send('500 Internal Server Error');
-		}
-	}
+		},
+	];
 
 	// POST
 
@@ -243,15 +260,12 @@ export class ReadingsController {
 
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
-				// check for validation errors first
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
 					console.log(errors);
-					return res.status(400).json(errors); // respond with the validation errors
+					return res.status(400).json(errors);
 				}
-
-				// no validation errors. extract and parse values from body of request
 
 				const temperature_BMP = parseFloat(req.body.temperature_BMP);
 				const temperature_DHT = parseFloat(req.body.temperature_DHT);
@@ -277,7 +291,7 @@ export class ReadingsController {
 					res.json(result); // end response with the full new reading
 				}
 
-				sendEventsToAll(result); // push the new reading to all SSE clients
+				ReadingEventsController.sendReading(result); // push the new reading to all SSE clients
 
 				// invalidate today's cache
 				redisClient.del('readings24h');
@@ -307,18 +321,14 @@ export class ReadingsController {
 
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
-				// check for validation errors first
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
 					console.log(errors);
-					return res.status(400).json(errors); // respond with the validation errors
+					return res.status(400).json(errors);
 				}
 
-				// no validation errors. extract and parse values from body of request
-
-				const id = parseInt(req.query.id as string);
-
+				const id = parseInt(req.params.id);
 				const temperature_BMP = parseFloat(req.body.temperature_BMP);
 				const temperature_DHT = parseFloat(req.body.temperature_DHT);
 				const pressure_BMP = parseFloat(req.body.pressure_BMP);
@@ -363,16 +373,14 @@ export class ReadingsController {
 
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
-				// check for validation errors first
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
 					console.log(errors);
-					return res.status(400).json(errors); // respond with the validation errors
+					return res.status(400).json(errors);
 				}
 
-				// no validation errors. extract and parse query params of request
-				const id = parseInt(req.query.id as string);
+				const id = parseInt(req.params.id);
 
 				const results = await prisma.readings.delete({
 					where: { id: id },

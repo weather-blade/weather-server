@@ -32,7 +32,7 @@ export class ReadingsValidation {
 
 	public static readingId: Schema = {
 		id: {
-			in: ['query'],
+			in: ['params'],
 			trim: true,
 			isNumeric: true,
 			escape: true,
@@ -41,7 +41,7 @@ export class ReadingsValidation {
 
 	public static readingIdExists: Schema = {
 		id: {
-			in: ['query'],
+			in: ['params'],
 			custom: {
 				options: async (inputId) => {
 					// check if there is matching id in database
