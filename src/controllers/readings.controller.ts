@@ -39,31 +39,33 @@ export class ReadingsController {
 		},
 	];
 
-	public static async getTimeRange(req: Request, res: Response, next: NextFunction) {
-		try {
-			const startTime = new Date(String(req.query.start));
-			const endTime = new Date(String(req.query.end));
+	public static getTimeRange = [
+		async (req: Request, res: Response, next: NextFunction) => {
+			try {
+				const startTime = new Date(String(req.query.start));
+				const endTime = new Date(String(req.query.end));
 
-			if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
-				return res.status(400).send('400 Bad Request (use ISO 8601 time format)');
-			}
+				if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+					return res.status(400).send('400 Bad Request (use ISO 8601 time format)');
+				}
 
-			const readings = await prisma.readings.findMany({
-				where: {
-					createdAt: {
-						gte: startTime,
-						lte: endTime,
+				const readings = await prisma.readings.findMany({
+					where: {
+						createdAt: {
+							gte: startTime,
+							lte: endTime,
+						},
 					},
-				},
-				orderBy: { createdAt: 'desc' },
-			});
+					orderBy: { createdAt: 'desc' },
+				});
 
-			res.json(readings);
-		} catch (error) {
-			console.error(error);
-			return res.status(500).send('500 Internal Server Error');
-		}
-	}
+				res.json(readings);
+			} catch (error) {
+				console.error(error);
+				return res.status(500).send('500 Internal Server Error');
+			}
+		},
+	];
 
 	public static getMonthFull = [
 		checkSchema(ReadingsValidation.yearMonth),
@@ -216,39 +218,41 @@ export class ReadingsController {
 		},
 	];
 
-	public static async getLast24h(req: Request, res: Response, next: NextFunction) {
-		try {
-			const cacheResults = await redisClient.get('readings24h');
+	public static getLast24h = [
+		async (req: Request, res: Response, next: NextFunction) => {
+			try {
+				const cacheResults = await redisClient.get('readings24h');
 
-			if (cacheResults) {
-				const readings = JSON.parse(cacheResults);
-				res.json(readings);
-			} else {
-				const startTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // from 24 hours ago (miliseconds)
-				const endTime = new Date(); // up until now
+				if (cacheResults) {
+					const readings = JSON.parse(cacheResults);
+					res.json(readings);
+				} else {
+					const startTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // from 24 hours ago (miliseconds)
+					const endTime = new Date(); // up until now
 
-				const readings = await prisma.readings.findMany({
-					where: {
-						createdAt: {
-							gte: startTime,
-							lte: endTime,
+					const readings = await prisma.readings.findMany({
+						where: {
+							createdAt: {
+								gte: startTime,
+								lte: endTime,
+							},
 						},
-					},
-					orderBy: { createdAt: 'desc' },
-				});
+						orderBy: { createdAt: 'desc' },
+					});
 
-				res.json(readings);
+					res.json(readings);
 
-				redisClient.set('readings24h', JSON.stringify(readings), {
-					EX: 360, // expire after 6 minutes
-					NX: true,
-				});
+					redisClient.set('readings24h', JSON.stringify(readings), {
+						EX: 360, // expire after 6 minutes
+						NX: true,
+					});
+				}
+			} catch (error) {
+				console.error(error);
+				return res.status(500).send('500 Internal Server Error');
 			}
-		} catch (error) {
-			console.error(error);
-			return res.status(500).send('500 Internal Server Error');
-		}
-	}
+		},
+	];
 
 	// POST
 
