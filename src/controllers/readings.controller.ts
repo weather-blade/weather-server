@@ -1,6 +1,6 @@
 import { checkSchema, validationResult } from 'express-validator';
 import { prisma } from '../db/prisma.js';
-import { sendEventsToAll } from '../controllers/readingsEvents.controller.js';
+import { ReadingEventsController } from '../controllers/readingsEvents.controller.js';
 import { ReadingsValidation } from '../validations/readings.validation.js';
 import { redisClient } from '../db/redis.js';
 import { UtilFns } from '../utils/functions.js';
@@ -289,7 +289,7 @@ export class ReadingsController {
 					res.json(result); // end response with the full new reading
 				}
 
-				sendEventsToAll(result); // push the new reading to all SSE clients
+				ReadingEventsController.sendReading(result); // push the new reading to all SSE clients
 
 				// invalidate today's cache
 				redisClient.del('readings24h');
