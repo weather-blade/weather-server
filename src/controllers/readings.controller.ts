@@ -19,8 +19,6 @@ export class ReadingsController {
 			try {
 				const id = parseInt(req.params.id);
 
-				console.log('id:', id);
-
 				const reading = await prisma.readings.findFirst({
 					where: {
 						id: id,
