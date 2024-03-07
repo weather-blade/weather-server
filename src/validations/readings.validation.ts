@@ -46,7 +46,7 @@ export class ReadingsValidation {
 				options: async (inputId) => {
 					// check if there is matching id in database
 					try {
-						await prisma.readings.findFirstOrThrow({
+						await prisma.readings.findUniqueOrThrow({
 							where: { id: parseInt(inputId) },
 						});
 						return true;

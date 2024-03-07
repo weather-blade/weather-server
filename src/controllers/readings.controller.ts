@@ -19,11 +19,9 @@ export class ReadingsController {
 			try {
 				const id = parseInt(req.params.id);
 
-				const reading = await prisma.readings.findFirst({
+				const reading = await prisma.readings.findUnique({
 					where: {
-						id: {
-							equals: id,
-						},
+						id: id,
 					},
 				});
 
