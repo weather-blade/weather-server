@@ -21,7 +21,9 @@ export class ReadingsController {
 
 				const reading = await prisma.readings.findFirst({
 					where: {
-						id: id,
+						id: {
+							equals: id,
+						},
 					},
 				});
 
