@@ -12,17 +12,32 @@ const WEEK_SECONDS = 604800;
 export class ReadingsController {
 	// GET
 
-	public static async getAll(req: Request, res: Response, next: NextFunction) {
-		try {
-			const readings = await prisma.readings.findMany({
-				orderBy: { createdAt: 'desc' },
-			});
-			res.json(readings);
-		} catch (error) {
-			console.error(error);
-			return res.status(500).send('500 Internal Server Error');
-		}
-	}
+	public static getOne = [
+		checkSchema(ReadingsValidation.readingId),
+
+		async (req: Request, res: Response, next: NextFunction) => {
+			try {
+				const id = parseInt(req.params.id);
+
+				console.log('id:', id);
+
+				const reading = await prisma.readings.findFirst({
+					where: {
+						id: id,
+					},
+				});
+
+				if (reading === null) {
+					return res.status(404).send('404 Reading not Found');
+				}
+
+				res.json(reading);
+			} catch (error) {
+				console.error(error);
+				return res.status(500).send('500 Internal Server Error');
+			}
+		},
+	];
 
 	public static async getTimeRange(req: Request, res: Response, next: NextFunction) {
 		try {
@@ -243,15 +258,12 @@ export class ReadingsController {
 
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
-				// check for validation errors first
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
 					console.log(errors);
-					return res.status(400).json(errors); // respond with the validation errors
+					return res.status(400).json(errors);
 				}
-
-				// no validation errors. extract and parse values from body of request
 
 				const temperature_BMP = parseFloat(req.body.temperature_BMP);
 				const temperature_DHT = parseFloat(req.body.temperature_DHT);
@@ -307,18 +319,14 @@ export class ReadingsController {
 
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
-				// check for validation errors first
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
 					console.log(errors);
-					return res.status(400).json(errors); // respond with the validation errors
+					return res.status(400).json(errors);
 				}
 
-				// no validation errors. extract and parse values from body of request
-
-				const id = parseInt(req.query.id as string);
-
+				const id = parseInt(req.params.id);
 				const temperature_BMP = parseFloat(req.body.temperature_BMP);
 				const temperature_DHT = parseFloat(req.body.temperature_DHT);
 				const pressure_BMP = parseFloat(req.body.pressure_BMP);
@@ -363,16 +371,14 @@ export class ReadingsController {
 
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
-				// check for validation errors first
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
 					console.log(errors);
-					return res.status(400).json(errors); // respond with the validation errors
+					return res.status(400).json(errors);
 				}
 
-				// no validation errors. extract and parse query params of request
-				const id = parseInt(req.query.id as string);
+				const id = parseInt(req.params.id);
 
 				const results = await prisma.readings.delete({
 					where: { id: id },

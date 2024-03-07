@@ -5,10 +5,10 @@ import { readingsEventsController } from '../controllers/readingsEvents.controll
 
 const router = express.Router();
 
-router.get('/', ReadingsController.getAll);
+router.get('/:id', ...ReadingsController.getOne);
 router.post('/', authenticate, ...ReadingsController.postReading);
-router.put('/', authenticate, ...ReadingsController.upsertReading);
-router.delete('/', authenticate, ...ReadingsController.deleteReading);
+router.put('/:id', authenticate, ...ReadingsController.upsertReading);
+router.delete('/:id', authenticate, ...ReadingsController.deleteReading);
 
 router.get('/events', readingsEventsController); // Server-sent events
 
