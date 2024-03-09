@@ -6,6 +6,7 @@ import compression from 'compression';
 import apiRouter from './routes/api.route.js';
 import { cors } from './middleware/cors.js';
 import { notFound } from './middleware/notFound.js';
+import { ErrorHandler } from './exceptions/ErrorHandler.js';
 
 dotenv.config();
 
@@ -21,6 +22,8 @@ app.use(compression());
 app.use(cors);
 
 app.use('/api', apiRouter);
+
+app.use(ErrorHandler.handleError);
 
 app.use(notFound);
 
