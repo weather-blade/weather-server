@@ -20,7 +20,7 @@ export class ReadingsController {
 			try {
 				const errors = validationResult(req);
 				if (!errors.isEmpty()) {
-					throw new AppError(400, 'Bad request', errors);
+					throw new AppError(400, 'Bad request', errors.array());
 				}
 
 				const id = parseInt(req.params.id);
@@ -76,7 +76,7 @@ export class ReadingsController {
 			try {
 				const errors = validationResult(req);
 				if (!errors.isEmpty()) {
-					throw new AppError(400, 'Bad request (wrong year / month format)', errors);
+					throw new AppError(400, 'Bad request (wrong year / month format)', errors.array());
 				}
 
 				const year = parseInt(req.query.year as string);
@@ -130,7 +130,7 @@ export class ReadingsController {
 			try {
 				const errors = validationResult(req);
 				if (!errors.isEmpty()) {
-					throw new AppError(400, 'Bad request (wrong year / month format)', errors);
+					throw new AppError(400, 'Bad request (wrong year / month format)', errors.array());
 				}
 
 				const year = parseInt(req.query.year as string);
@@ -262,7 +262,7 @@ export class ReadingsController {
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
-					throw new AppError(400, 'Bad request', errors);
+					throw new AppError(400, 'Bad request', errors.array());
 				}
 
 				const temperature_BMP = parseFloat(req.body.temperature_BMP);
@@ -321,7 +321,7 @@ export class ReadingsController {
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
-					throw new AppError(400, 'Bad request', errors);
+					throw new AppError(400, 'Bad request', errors.array());
 				}
 
 				const id = parseInt(req.params.id);
@@ -370,7 +370,7 @@ export class ReadingsController {
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
-					throw new AppError(400, 'Bad request', errors);
+					throw new AppError(400, 'Bad request', errors.array());
 				}
 
 				next();
@@ -386,7 +386,7 @@ export class ReadingsController {
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
-					throw new AppError(404, 'Reading not found', errors);
+					throw new AppError(404, 'Reading not found', errors.array());
 				}
 
 				const id = parseInt(req.params.id);
