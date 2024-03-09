@@ -181,7 +181,6 @@ export class ReadingsController {
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
 				const errors = validationResult(req);
-
 				if (!errors.isEmpty()) {
 					throw new AppError(400, 'Bad request', errors.array());
 				}
@@ -235,7 +234,6 @@ export class ReadingsController {
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
 				const errors = validationResult(req);
-
 				if (!errors.isEmpty()) {
 					throw new AppError(400, 'Bad request', errors.array());
 				}
@@ -271,7 +269,6 @@ export class ReadingsController {
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
 				const errors = validationResult(req);
-
 				if (!errors.isEmpty()) {
 					throw new AppError(400, 'Bad request', errors.array());
 				}
@@ -287,7 +284,6 @@ export class ReadingsController {
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
 				const errors = validationResult(req);
-
 				if (!errors.isEmpty()) {
 					throw new AppError(404, 'Reading not found', errors.array());
 				}
