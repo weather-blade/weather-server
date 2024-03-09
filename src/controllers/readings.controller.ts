@@ -5,6 +5,7 @@ import { ReadingsValidation } from '../validations/readings.validation.js';
 import { redisClient } from '../db/redis.js';
 import { UtilFns } from '../utils/functions.js';
 import { lttb } from '../utils/lttb.js';
+import { AppError } from '../exceptions/AppError.js';
 import type { Request, Response, NextFunction } from 'express';
 
 const WEEK_SECONDS = 604800;
@@ -26,13 +27,12 @@ export class ReadingsController {
 				});
 
 				if (reading === null) {
-					return res.status(404).send('404 Reading not Found');
+					throw new AppError(404, 'Reading not found');
 				}
 
 				res.json(reading);
 			} catch (error) {
-				console.error(error);
-				return res.status(500).send('500 Internal Server Error');
+				next(error);
 			}
 		},
 	];
@@ -44,7 +44,7 @@ export class ReadingsController {
 				const endTime = new Date(String(req.query.end));
 
 				if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
-					return res.status(400).send('400 Bad Request (use ISO 8601 time format)');
+					throw new AppError(400, 'Bad request (use ISO 8601 time format)');
 				}
 
 				const readings = await prisma.readings.findMany({
@@ -59,8 +59,7 @@ export class ReadingsController {
 
 				res.json(readings);
 			} catch (error) {
-				console.error(error);
-				return res.status(500).send('500 Internal Server Error');
+				next(error);
 			}
 		},
 	];
@@ -72,8 +71,7 @@ export class ReadingsController {
 			try {
 				const errors = validationResult(req);
 				if (!errors.isEmpty()) {
-					console.error(errors);
-					return res.status(400).json(errors);
+					throw new AppError(400, 'Bad request (wrong year / month format)', errors);
 				}
 
 				const year = parseInt(req.query.year as string);
@@ -82,7 +80,7 @@ export class ReadingsController {
 				const { firstDay, lastDay } = UtilFns.getFirstLastDay(year, month);
 
 				if (isNaN(firstDay.getTime()) || isNaN(lastDay.getTime())) {
-					return res.status(400).send('400 Bad Request (wrong year / month format)');
+					throw new AppError(400, 'Bad request (wrong year / month format)');
 				}
 
 				const cacheName = `month-full-${firstDay.getUTCFullYear()}-${firstDay.getUTCMonth()}`;
@@ -115,8 +113,7 @@ export class ReadingsController {
 					EX: WEEK_SECONDS, // expire after 7 days
 				});
 			} catch (error) {
-				console.error(error);
-				return res.status(500).send('500 Internal Server Error');
+				next(error);
 			}
 		},
 	];
@@ -128,8 +125,7 @@ export class ReadingsController {
 			try {
 				const errors = validationResult(req);
 				if (!errors.isEmpty()) {
-					console.error(errors);
-					return res.status(400).json(errors);
+					throw new AppError(400, 'Bad request (wrong year / month format)', errors);
 				}
 
 				const year = parseInt(req.query.year as string);
@@ -138,7 +134,7 @@ export class ReadingsController {
 				const { firstDay, lastDay } = UtilFns.getFirstLastDay(year, month);
 
 				if (isNaN(firstDay.getTime()) || isNaN(lastDay.getTime())) {
-					return res.status(400).send('400 Bad Request (wrong year / month format)');
+					throw new AppError(400, 'Bad request (wrong year / month format)');
 				}
 
 				const cacheName = `month-decimated-${firstDay.getUTCFullYear()}-${firstDay.getUTCMonth()}`;
@@ -210,8 +206,7 @@ export class ReadingsController {
 					EX: WEEK_SECONDS, // expire after 7 days
 				});
 			} catch (error) {
-				console.error(error);
-				return res.status(500).send('500 Internal Server Error');
+				next(error);
 			}
 		},
 	];
@@ -246,8 +241,7 @@ export class ReadingsController {
 					});
 				}
 			} catch (error) {
-				console.error(error);
-				return res.status(500).send('500 Internal Server Error');
+				next(error);
 			}
 		},
 	];
@@ -263,8 +257,7 @@ export class ReadingsController {
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
-					console.log(errors);
-					return res.status(400).json(errors);
+					throw new AppError(400, 'Bad request', errors);
 				}
 
 				const temperature_BMP = parseFloat(req.body.temperature_BMP);
@@ -306,8 +299,7 @@ export class ReadingsController {
 				redisClient.del(cacheNameFull);
 				redisClient.del(cacheNameDecimated);
 			} catch (error) {
-				console.error(error);
-				return res.status(500).send('500 Internal Server Error');
+				next(error);
 			}
 		},
 	];
@@ -324,8 +316,7 @@ export class ReadingsController {
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
-					console.log(errors);
-					return res.status(400).json(errors);
+					throw new AppError(400, 'Bad request', errors);
 				}
 
 				const id = parseInt(req.params.id);
@@ -359,8 +350,7 @@ export class ReadingsController {
 
 				res.json(result);
 			} catch (error) {
-				console.error(error);
-				return res.status(500).send('500 Internal Server Error');
+				next(error);
 			}
 		},
 	];
@@ -369,6 +359,21 @@ export class ReadingsController {
 
 	public static deleteReading = [
 		checkSchema(ReadingsValidation.readingId),
+
+		async (req: Request, res: Response, next: NextFunction) => {
+			try {
+				const errors = validationResult(req);
+
+				if (!errors.isEmpty()) {
+					throw new AppError(400, 'Bad request', errors);
+				}
+
+				next();
+			} catch (error) {
+				next(error);
+			}
+		},
+
 		checkSchema(ReadingsValidation.readingIdExists),
 
 		async (req: Request, res: Response, next: NextFunction) => {
@@ -376,8 +381,7 @@ export class ReadingsController {
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
-					console.log(errors);
-					return res.status(400).json(errors);
+					throw new AppError(404, 'Reading not found', errors);
 				}
 
 				const id = parseInt(req.params.id);
@@ -388,8 +392,7 @@ export class ReadingsController {
 
 				res.json(results);
 			} catch (error) {
-				console.error(error);
-				return res.status(500).send('500 Internal Server Error');
+				next(error);
 			}
 		},
 	];
