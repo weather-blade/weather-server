@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { redisClient } from '../db/redis.js';
 import { UtilFns } from '../utils/functions.js';
 import type { ITimePointForecast, ISunriseSunset } from '../types/MET.js';
+import { AppError } from '../exceptions/AppError.js';
 
 export class ForecastController {
 	/**
@@ -17,8 +18,7 @@ export class ForecastController {
 				sunrise: sunrise,
 			});
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send('500 Internal Server Error');
+			next(error);
 		}
 	}
 
@@ -29,7 +29,7 @@ export class ForecastController {
 		try {
 			const forecast = await MET.fetchForecast();
 			if (forecast === undefined) {
-				throw new Error('Forecast is undefined');
+				throw new AppError(500, 'Internal server error');
 			}
 
 			// convert date strings to date objects
@@ -64,8 +64,7 @@ export class ForecastController {
 				precipitationTotal,
 			});
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send('500 Internal Server Error');
+			next(error);
 		}
 	}
 }
