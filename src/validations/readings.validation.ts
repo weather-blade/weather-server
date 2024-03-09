@@ -1,6 +1,5 @@
-import { prisma } from '../db/prisma.js';
+import { ReadingsService } from '../services/readings.service.js';
 import type { Schema } from 'express-validator';
-import type { Request } from 'express';
 
 export class ReadingsValidation {
 	public static reading: Schema = {
@@ -39,21 +38,21 @@ export class ReadingsValidation {
 		},
 	};
 
+	/**
+	 * Checks if reading with given ID exists in database.
+	 */
 	public static readingIdExists: Schema = {
 		id: {
 			in: ['params'],
 			custom: {
 				options: async (inputId) => {
-					// check if there is matching id in database
-					try {
-						await prisma.readings.findUniqueOrThrow({
-							where: { id: parseInt(inputId) },
-						});
-						return true;
-					} catch (error) {
-						console.error(error);
+					const reading = await ReadingsService.getById(parseInt(inputId));
+
+					if (reading === null) {
 						throw new Error('Reading with that ID does not exist');
 					}
+
+					return true;
 				},
 			},
 		},
@@ -82,19 +81,6 @@ export class ReadingsValidation {
 			escape: true,
 		},
 	};
-
-	public static getDate(req: Request) {
-		const createdAt: 'string' | undefined = req.body.createdAt;
-		// If date isn't included in body, it will be undefined.
-		// Undefined means Prisma will use default value (current time).
-		if (createdAt !== undefined) {
-			// If the field passes validator.js validation, this should always return valid date.
-			// https://github.com/validatorjs/validator.js/blob/master/src/lib/isISO8601.js
-			return new Date(createdAt);
-		} else {
-			return undefined;
-		}
-	}
 
 	public static yearMonth: Schema = {
 		year: {
