@@ -2,6 +2,7 @@ import { checkSchema, validationResult } from 'express-validator';
 import { PushValidation } from '../validations/push.validation.js';
 import { prisma } from '../db/prisma.js';
 import webpush from 'web-push';
+import { AppError } from '../exceptions/AppError.js';
 import type { Request, Response, NextFunction } from 'express';
 
 export class PushController {
@@ -12,8 +13,7 @@ export class PushController {
 		try {
 			return res.send(process.env.VAPID_PUBLIC_KEY);
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send('500 Internal Server Error');
+			next(error);
 		}
 	}
 
@@ -28,9 +28,7 @@ export class PushController {
 				const errors = validationResult(req);
 
 				if (!errors.isEmpty()) {
-					console.error(errors);
-					res.status(400).json(errors);
-					return;
+					throw new AppError(400, 'Bad request', errors.array());
 				}
 
 				const subscription = req.body.subscription;
@@ -43,8 +41,7 @@ export class PushController {
 
 				res.json(result);
 			} catch (error) {
-				console.error(error);
-				return res.status(500).send('500 Internal Server Error');
+				next(error);
 			}
 		},
 	];
@@ -98,8 +95,7 @@ export class PushController {
 
 			res.sendStatus(200);
 		} catch (error) {
-			console.error(error);
-			return res.status(500).send('500 Internal Server Error');
+			next(error);
 		}
 	}
 }

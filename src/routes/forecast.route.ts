@@ -9,6 +9,6 @@ router.get('/notification', ForecastController.getNotification);
 
 router.get('/push/vapidPublicKey', PushController.getPublicKey);
 router.post('/push/subscribe', ...PushController.subscribe);
-router.post('/push/trigger', PushController.sendPush);
+// router.post('/push/trigger', PushController.sendPush);
 
 export default router;
