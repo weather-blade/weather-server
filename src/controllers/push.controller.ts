@@ -3,41 +3,31 @@ import { PushValidation } from '../validations/push.validation.js';
 import { prisma } from '../db/prisma.js';
 import webpush from 'web-push';
 import { AppError } from '../exceptions/AppError.js';
+import { PushService } from '../services/push.service.js';
 import type { Request, Response, NextFunction } from 'express';
 
 export class PushController {
-	/**
-	 * Retuns the public VAPID key
-	 */
 	public static async getPublicKey(req: Request, res: Response, next: NextFunction) {
 		try {
-			return res.send(process.env.VAPID_PUBLIC_KEY);
+			res.send(PushService.getVapidPublicKey());
 		} catch (error) {
 			next(error);
 		}
 	}
 
-	/**
-	 * Saves push subscription to database
-	 */
 	public static subscribe = [
 		checkSchema(PushValidation.subscription),
 
 		async (req: Request, res: Response, next: NextFunction) => {
 			try {
 				const errors = validationResult(req);
-
 				if (!errors.isEmpty()) {
 					throw new AppError(400, 'Bad request', errors.array());
 				}
 
 				const subscription = req.body.subscription;
 
-				const result = await prisma.pushSubscriptions.create({
-					data: {
-						pushSubscription: subscription,
-					},
-				});
+				const result = await PushService.saveSubscription(subscription);
 
 				res.json(result);
 			} catch (error) {
