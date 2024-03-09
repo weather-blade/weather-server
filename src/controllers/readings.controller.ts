@@ -1,5 +1,5 @@
 import { checkSchema, validationResult } from 'express-validator';
-import { ReadingEventsController } from '../controllers/readingsEvents.controller.js';
+import { ReadingsEventsService } from '../services/readingsEvents.service.js';
 import { ReadingsValidation } from '../validations/readings.validation.js';
 import { redisClient } from '../db/redis.js';
 import { UtilFns } from '../utils/functions.js';
@@ -207,7 +207,7 @@ export class ReadingsController {
 					res.json(reading);
 				}
 
-				ReadingEventsController.sendReading(reading); // push the new reading to all SSE clients
+				ReadingsEventsService.sendReadingToAll(reading);
 
 				// invalidate today's cache
 				redisClient.del('readings24h');
