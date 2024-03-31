@@ -50,7 +50,8 @@
 		"web-push": "^3.6.6"
 	},
 	"engines": {
-		"node": "18.17.1"
+		"node": "20.11.1",
+		"pnpm": "8.15.5"
 	},
 	"prisma": {
 		"seed": "node --loader ts-node/esm prisma/seed.ts"

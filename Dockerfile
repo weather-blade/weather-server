@@ -1,6 +1,6 @@
-FROM node:18.17.1-bookworm-slim AS builder
+FROM node:20.11.1-bookworm-slim AS builder
 RUN apt-get update && apt-get upgrade -y
-RUN npm -g install pnpm@8.7.6
+RUN npm -g install pnpm@8.15.5
 
 WORKDIR /app
 
@@ -17,9 +17,9 @@ COPY . .
 RUN pnpm run build
 
 
-FROM node:18.17.1-bookworm-slim AS deployment
+FROM node:20.11.1-bookworm-slim AS deployment
 RUN apt-get update && apt-get upgrade -y
-RUN npm -g install pnpm@8.7.6
+RUN npm -g install pnpm@8.15.5
 RUN apt-get install openssl -y
 WORKDIR /app
 
