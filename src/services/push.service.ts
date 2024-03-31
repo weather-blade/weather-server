@@ -17,7 +17,9 @@ export class PushService {
 	}
 
 	private static async sendPush(pushSubscription: PushSubscription, payload: string) {
-		await webpush.sendNotification(pushSubscription, payload);
+		await webpush.sendNotification(pushSubscription, payload, {
+			TTL: 5 * 60 * 60, // 5 hours
+		});
 	}
 
 	/**
