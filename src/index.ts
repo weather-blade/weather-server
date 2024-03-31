@@ -7,6 +7,7 @@ import apiRouter from './routes/api.route.js';
 import { cors } from './middleware/cors.js';
 import { notFound } from './middleware/notFound.js';
 import { ErrorHandler } from './exceptions/ErrorHandler.js';
+import { initQueue } from './queue/bull.js';
 
 dotenv.config();
 
@@ -31,3 +32,5 @@ const port = process.env.PORT || 8080;
 app.listen(port, () => {
 	console.log(`[server] Server is running at http://localhost:${port}`);
 });
+
+initQueue();
