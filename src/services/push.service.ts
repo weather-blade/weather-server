@@ -1,6 +1,7 @@
 import { prisma } from '../db/prisma.js';
 import webpush from 'web-push';
 import type { PushSubscription } from 'web-push';
+import { AppError } from '../exceptions/AppError.js';
 
 export class PushService {
 	static {
@@ -44,7 +45,8 @@ export class PushService {
 				where: { id: result.id },
 			});
 
-			throw error;
+			//@ts-ignore
+			throw new AppError(400, 'Bad request (invalid subscription)', error.message);
 		}
 
 		return result;
