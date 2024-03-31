@@ -1,12 +1,22 @@
 import { prisma } from '../db/prisma.js';
 import webpush from 'web-push';
+import type { PushSubscription } from 'web-push';
 
 export class PushService {
-	/**
-	 * Returns public VAPID key
-	 */
+	static {
+		webpush.setVapidDetails(
+			'mailto:keadr23@gmail.com',
+			process.env.VAPID_PUBLIC_KEY,
+			process.env.VAPID_PRIVATE_KEY
+		);
+	}
+
 	public static getVapidPublicKey() {
 		return process.env.VAPID_PUBLIC_KEY;
+	}
+
+	private static async sendPush(pushSubscription: PushSubscription, payload: string) {
+		await webpush.sendNotification(pushSubscription, payload);
 	}
 
 	/**
@@ -20,6 +30,23 @@ export class PushService {
 			},
 		});
 
+		const message = JSON.stringify({
+			title: 'Meteostanice',
+			body: 'Notifikace byly zapnuty',
+		});
+
+		try {
+			await PushService.sendPush(subscription as unknown as PushSubscription, message);
+		} catch (error) {
+			console.log('Deleting invalid subscription', subscription);
+
+			await prisma.pushSubscriptions.delete({
+				where: { id: result.id },
+			});
+
+			throw error;
+		}
+
 		return result;
 	}
 
@@ -28,21 +55,14 @@ export class PushService {
 	 * Removes all inactive subscriptions at the same time.
 	 */
 	public static async sendNotification(payload: string) {
-		webpush.setVapidDetails(
-			'mailto:keadr23@gmail.com',
-			process.env.VAPID_PUBLIC_KEY,
-			process.env.VAPID_PRIVATE_KEY
-		);
-
 		const subscriptions = await prisma.pushSubscriptions.findMany();
 
 		const requests = subscriptions.map((subscription) => {
 			return async () => {
-				const pushSubscription =
-					subscription.pushSubscription as unknown as webpush.PushSubscription;
+				const pushSubscription = subscription.pushSubscription as unknown as PushSubscription;
 
 				try {
-					await webpush.sendNotification(pushSubscription, payload);
+					await PushService.sendPush(pushSubscription, payload);
 				} catch (error) {
 					//@ts-ignore
 					if (error?.statusCode === 404 || error?.statusCode === 410) {
