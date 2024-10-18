@@ -6,7 +6,7 @@ import { ForecastService } from '../services/forecast.service.js';
 const QUEUE_NAME = 'notifications';
 
 const connection: ConnectionOptions = {
-	host: 'redis',
+	host: 'localhost',
 	port: 6379,
 };
 
