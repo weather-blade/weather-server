@@ -13,14 +13,14 @@
 		"db:push": "prisma db push",
 		"db:seed": "prisma db seed",
 		"db:studio": "prisma studio",
-		"format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json|prisma)\"",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
 		"postinstall": "pnpm dlx prisma generate"
 	},
 	"devDependencies": {
 		"concurrently": "^8.2.1",
 		"nodemon": "^3.0.1",
-		"prettier": "^3.0.2",
-		"prettier-plugin-prisma": "^5.0.0",
+		"prettier": "^3.3.3",
 		"ts-node": "^10.9.1"
 	},
 	"dependencies": {
@@ -43,7 +43,7 @@
 		"web-push": "^3.6.6"
 	},
 	"engines": {
-		"node": "20.11.1"
+		"node": "22.10.0"
 	},
 	"prisma": {
 		"seed": "node --loader ts-node/esm prisma/seed.ts"
