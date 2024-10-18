@@ -1,6 +1,6 @@
 import { prisma } from '../db/prisma.js';
-import webpush from 'web-push';
 import type { PushSubscription } from 'web-push';
+import webpush from 'web-push';
 import { AppError } from '../exceptions/AppError.js';
 
 export class PushService {
@@ -26,10 +26,10 @@ export class PushService {
 	 * Saves push subscription to database
 	 * @param subscription
 	 */
-	public static async saveSubscription(subscription: string) {
-		const result = await prisma.pushSubscriptions.create({
+	public static async saveSubscription(subscription: PushSubscription) {
+		const result = await prisma.push_subscriptions.create({
 			data: {
-				pushSubscription: subscription,
+				push_subscription: JSON.stringify(subscription),
 			},
 		});
 
@@ -39,11 +39,11 @@ export class PushService {
 		});
 
 		try {
-			await PushService.sendPush(subscription as unknown as PushSubscription, message);
+			await PushService.sendPush(subscription, message);
 		} catch (error) {
 			console.log('Deleting invalid subscription', subscription);
 
-			await prisma.pushSubscriptions.delete({
+			await prisma.push_subscriptions.delete({
 				where: { id: result.id },
 			});
 
@@ -59,11 +59,11 @@ export class PushService {
 	 * Removes all inactive subscriptions at the same time.
 	 */
 	public static async sendNotification(payload: string) {
-		const subscriptions = await prisma.pushSubscriptions.findMany();
+		const subscriptions = await prisma.push_subscriptions.findMany();
 
 		const requests = subscriptions.map((subscription) => {
 			return async () => {
-				const pushSubscription = subscription.pushSubscription as unknown as PushSubscription;
+				const pushSubscription: PushSubscription = JSON.parse(subscription.push_subscription);
 
 				try {
 					await PushService.sendPush(pushSubscription, payload);
@@ -73,7 +73,7 @@ export class PushService {
 						try {
 							console.log('Deleting expired / invalid subscription', subscription);
 
-							await prisma.pushSubscriptions.delete({
+							await prisma.push_subscriptions.delete({
 								where: { id: subscription.id },
 							});
 						} catch (error) {

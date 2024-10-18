@@ -11,22 +11,22 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./database.sqlite3"
 }
 
-model Readings {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
+model readings {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now())
 
-  temperature_BMP Float
-  temperature_DHT Float
-  pressure_BMP    Float
-  humidity_DHT    Float
+  temperature_bmp Float
+  temperature_dht Float
+  pressure_bmp    Float
+  humidity_dht    Float
 }
 
-model PushSubscriptions {
-  id               Int      @id @default(autoincrement())
-  createdAt        DateTime @default(now())
-  pushSubscription Json
+model push_subscriptions {
+  id                Int      @id @default(autoincrement())
+  created_at        DateTime @default(now())
+  push_subscription String
 }

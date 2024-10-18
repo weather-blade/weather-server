@@ -5,7 +5,7 @@ import { redisClient } from '../db/redis.js';
 import { UtilFns } from '../utils/functions.js';
 import { AppError } from '../exceptions/AppError.js';
 import { ReadingsService } from '../services/readings.service.js';
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
 const WEEK_SECONDS = 7 * 24 * 60 * 60;
 
@@ -212,8 +212,8 @@ export class ReadingsController {
 				redisClient.del('readings24h');
 
 				// invalidate either given month's cache or current month's cache
-				const year = reading.createdAt.getUTCFullYear();
-				const month = reading.createdAt.getUTCMonth();
+				const year = reading.created_at.getUTCFullYear();
+				const month = reading.created_at.getUTCMonth();
 				const cacheNameFull = `month-full-${year}-${month}`;
 				const cacheNameDecimated = `month-decimated-${year}-${month}`;
 				redisClient.del(cacheNameFull);

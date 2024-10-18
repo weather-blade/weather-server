@@ -3,3 +3,4 @@ node_modules
 dist
 todo.md
 SA_key.json
+prisma/database.sqlite3

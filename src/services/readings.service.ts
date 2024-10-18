@@ -20,12 +20,12 @@ export class ReadingsService {
 	public static async getTimeRange(startTime: Date, endTime: Date) {
 		const readings = await prisma.readings.findMany({
 			where: {
-				createdAt: {
+				created_at: {
 					gte: startTime,
 					lte: endTime,
 				},
 			},
-			orderBy: { createdAt: 'desc' },
+			orderBy: { created_at: 'desc' },
 		});
 
 		return readings;
@@ -42,16 +42,16 @@ export class ReadingsService {
 
 		// lttb requires arrays of x and y value
 		const temperature_BMP_Full = readings.map<[number, number]>((reading) => {
-			return [reading.createdAt.getTime(), reading.temperature_BMP];
+			return [reading.created_at.getTime(), reading.temperature_bmp];
 		});
 		const temperature_DHT_Full = readings.map<[number, number]>((reading) => {
-			return [reading.createdAt.getTime(), reading.temperature_DHT];
+			return [reading.created_at.getTime(), reading.temperature_dht];
 		});
 		const humidity_DHT_Full = readings.map<[number, number]>((reading) => {
-			return [reading.createdAt.getTime(), reading.humidity_DHT];
+			return [reading.created_at.getTime(), reading.humidity_dht];
 		});
 		const pressure_BMP_Full = readings.map<[number, number]>((reading) => {
-			return [reading.createdAt.getTime(), reading.pressure_BMP];
+			return [reading.created_at.getTime(), reading.pressure_bmp];
 		});
 
 		// Usually, there is ~8000 readings per month.
@@ -91,12 +91,12 @@ export class ReadingsService {
 
 		const readings = await prisma.readings.findMany({
 			where: {
-				createdAt: {
+				created_at: {
 					gte: startTime,
 					lte: endTime,
 				},
 			},
-			orderBy: { createdAt: 'desc' },
+			orderBy: { created_at: 'desc' },
 		});
 
 		return readings;
@@ -104,29 +104,29 @@ export class ReadingsService {
 
 	/**
 	 * Saves the reading to database
-	 * @param temperature_BMP
-	 * @param temperature_DHT
-	 * @param pressure_BMP
-	 * @param humidity_DHT
+	 * @param temperature_bmp
+	 * @param temperature_dht
+	 * @param pressure_bmp
+	 * @param humidity_dht
 	 * @param createdAt optional, if not included, current time will be used
 	 */
 	public static async createReading(
-		temperature_BMP: number,
-		temperature_DHT: number,
-		pressure_BMP: number,
-		humidity_DHT: number,
+		temperature_bmp: number,
+		temperature_dht: number,
+		pressure_bmp: number,
+		humidity_dht: number,
 
 		createdAt: Date | undefined = undefined
 	) {
 		const reading = await prisma.readings.create({
 			data: {
-				temperature_BMP,
-				temperature_DHT,
-				pressure_BMP,
-				humidity_DHT,
+				temperature_bmp,
+				temperature_dht,
+				pressure_bmp,
+				humidity_dht,
 
 				// Undefined means Prisma will use default value (current time).
-				createdAt,
+				created_at: createdAt,
 			},
 		});
 
@@ -137,38 +137,38 @@ export class ReadingsService {
 	 * Updates the reading with given ID
 	 * If it doesn't exist, creates a new one
 	 * @param id
-	 * @param temperature_BMP
-	 * @param temperature_DHT
-	 * @param pressure_BMP
-	 * @param humidity_DHT
+	 * @param temperature_bmp
+	 * @param temperature_dht
+	 * @param pressure_bmp
+	 * @param humidity_dht
 	 * @param createdAt
 	 */
 	public static async upsertReading(
 		id: number,
-		temperature_BMP: number,
-		temperature_DHT: number,
-		pressure_BMP: number,
-		humidity_DHT: number,
+		temperature_bmp: number,
+		temperature_dht: number,
+		pressure_bmp: number,
+		humidity_dht: number,
 		createdAt: Date
 	) {
 		const reading = await prisma.readings.upsert({
 			where: { id: id },
 			update: {
-				createdAt,
+				created_at: createdAt,
 
-				temperature_BMP,
-				temperature_DHT,
-				pressure_BMP,
-				humidity_DHT,
+				temperature_bmp,
+				temperature_dht,
+				pressure_bmp,
+				humidity_dht,
 			},
 			create: {
 				id,
-				createdAt,
+				created_at: createdAt,
 
-				temperature_BMP,
-				temperature_DHT,
-				pressure_BMP,
-				humidity_DHT,
+				temperature_bmp,
+				temperature_dht,
+				pressure_bmp,
+				humidity_dht,
 			},
 		});
 
