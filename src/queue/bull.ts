@@ -2,8 +2,9 @@ import type { ConnectionOptions } from 'bullmq';
 import { Queue, Worker } from 'bullmq';
 import { PushService } from '../services/push.service.js';
 import { ForecastService } from '../services/forecast.service.js';
+import { backupDb } from '../scripts/backupDb.js';
 
-const QUEUE_NAME = 'notifications';
+const QUEUE_NAME = 'first-queue';
 
 const connection: ConnectionOptions = {
 	host: 'localhost',
@@ -19,9 +20,18 @@ await queue.obliterate();
 const worker = new Worker(
 	QUEUE_NAME,
 	async (job) => {
-		const notification = await ForecastService.getNotification();
+		switch (job.name) {
+			case 'sendNotifications': {
+				const notification = await ForecastService.getNotification();
+				await PushService.sendNotification(JSON.stringify(notification));
+				break;
+			}
 
-		await PushService.sendNotification(JSON.stringify(notification));
+			case 'backupDb': {
+				await backupDb();
+				break;
+			}
+		}
 	},
 	{ connection }
 );
@@ -42,6 +52,17 @@ export async function initQueue() {
 			repeat: {
 				// every morning at 04:00
 				pattern: '0 4 * * *',
+			},
+		}
+	);
+
+	await queue.add(
+		'backupDb',
+		{},
+		{
+			repeat: {
+				// every morning at 02:00
+				pattern: '0 2 * * *',
 			},
 		}
 	);

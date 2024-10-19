@@ -8,18 +8,6 @@ services:
 #
 #
 
-#  db-backup:
-#    # https://github.com/weather-blade/weather-db-backup
-#    image: ghcr.io/weather-blade/weather-db-backup:latest
-#    restart: unless-stopped
-#    depends_on:
-#      - db
-#    environment:
-#      DATABASE_URL: ${DATABASE_URL}
-#      GDRIVE_FOLDER_ID: ${GDRIVE_FOLDER_ID}
-#    volumes:
-#      - ./SA_key.json:/app/SA_key.json:ro
-
 #  server:
 #    build: .
 #    restart: unless-stopped
