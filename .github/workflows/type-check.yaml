@@ -3,7 +3,6 @@ name: Typescript type check
 on:
   # when pushing to main
   push:
-    #    branches: [main]
     branches:
       - '*'
 
