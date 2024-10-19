@@ -15,25 +15,26 @@ concurrency:
   group: 'type-check'
   cancel-in-progress: true
 
-permissions:
-  packages: write
-
 jobs:
   job-1:
-    - uses: actions/checkout@v4
+    name: Build and deploy
+    runs-on: ubuntu-latest
 
-    - uses: pnpm/action-setup@v4
-      with:
-        version: 9
-        run_install: false
+    steps:
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22
-        cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
-    - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
 
-    - name: Build the application
-      run: pnpm run build
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the application
+        run: pnpm run build
