@@ -1,57 +1,6 @@
 services:
   redis:
-    image: redis:7.2.2-bookworm
+    image: redis:7.4.1-bookworm
     restart: unless-stopped
-
-  db:
-    image: postgres:15.2
-    restart: unless-stopped
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-
-  db-backup:
-    # https://github.com/weather-blade/weather-db-backup
-    image: ghcr.io/weather-blade/weather-db-backup:latest
-    restart: unless-stopped
-    depends_on:
-      - db
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      GDRIVE_FOLDER_ID: ${GDRIVE_FOLDER_ID}
-    volumes:
-      - ./SA_key.json:/app/SA_key.json:ro
-
-  server:
-    image: ghcr.io/weather-blade/weather-server:latest
-    restart: unless-stopped
-    depends_on:
-      - redis
-      - db
-    environment:
-      PORT: ${PORT}
-      API_PASSWORD: ${API_PASSWORD}
-      DATABASE_URL: ${DATABASE_URL}
-      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
-      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
-
-    networks:
-      - 'web'
-      - 'default'
-
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.routers.weatherapi.rule=Host(`weatherapi.bladesheng.com`)'
-      - 'traefik.http.routers.weatherapi.entrypoints=websecure'
-      - 'traefik.http.routers.weatherapi.tls.certresolver=myresolver'
-      - 'traefik.http.services.weatherapi.loadbalancer.server.port=${PORT}'
-
-volumes:
-  db-data:
-
-networks:
-  web:
-    external: true
+    ports:
+      - '6379:6379'
