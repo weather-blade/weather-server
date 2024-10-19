@@ -1,4 +1,4 @@
-name: Typescript type check
+name: Build and Typescript type check
 
 on:
   # when pushing to main
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   job-1:
-    name: Build and deploy
+    name: Check types
     runs-on: ubuntu-latest
 
     steps:
@@ -35,5 +35,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build the application
+      - name: Build the application and check types
         run: pnpm run build
