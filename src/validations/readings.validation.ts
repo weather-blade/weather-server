@@ -3,25 +3,25 @@ import type { Schema } from 'express-validator';
 
 export class ReadingsValidation {
 	public static reading: Schema = {
-		temperature_BMP: {
+		temperature_bmp: {
 			in: ['body'],
 			trim: true,
 			isNumeric: true,
 			escape: true,
 		},
-		temperature_DHT: {
+		temperature_dht: {
 			in: ['body'],
 			trim: true,
 			isNumeric: true,
 			escape: true,
 		},
-		pressure_BMP: {
+		pressure_bmp: {
 			in: ['body'],
 			trim: true,
 			isNumeric: true,
 			escape: true,
 		},
-		humidity_DHT: {
+		humidity_dht: {
 			in: ['body'],
 			trim: true,
 			isNumeric: true,
@@ -59,7 +59,7 @@ export class ReadingsValidation {
 	};
 
 	public static readingDate: Schema = {
-		createdAt: {
+		created_at: {
 			in: ['body'],
 			optional: true,
 			trim: true,
@@ -71,7 +71,7 @@ export class ReadingsValidation {
 	};
 
 	public static readingDateRequired: Schema = {
-		createdAt: {
+		created_at: {
 			in: ['body'],
 			optional: false,
 			trim: true,

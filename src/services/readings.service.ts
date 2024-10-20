@@ -41,16 +41,16 @@ export class ReadingsService {
 		const readings = await ReadingsService.getTimeRange(startTime, endTime);
 
 		// lttb requires arrays of x and y value
-		const temperature_BMP_Full = readings.map<[number, number]>((reading) => {
+		const temperature_bmp_Full = readings.map<[number, number]>((reading) => {
 			return [reading.created_at.getTime(), reading.temperature_bmp];
 		});
-		const temperature_DHT_Full = readings.map<[number, number]>((reading) => {
+		const temperature_dht_Full = readings.map<[number, number]>((reading) => {
 			return [reading.created_at.getTime(), reading.temperature_dht];
 		});
-		const humidity_DHT_Full = readings.map<[number, number]>((reading) => {
+		const humidity_dht_Full = readings.map<[number, number]>((reading) => {
 			return [reading.created_at.getTime(), reading.humidity_dht];
 		});
-		const pressure_BMP_Full = readings.map<[number, number]>((reading) => {
+		const pressure_bmp_Full = readings.map<[number, number]>((reading) => {
 			return [reading.created_at.getTime(), reading.pressure_bmp];
 		});
 
@@ -58,24 +58,24 @@ export class ReadingsService {
 		// With that many points, the browser starts to lag when rendering the chart.
 		// 1000 readings seems to be a nice compromise between browser lag and data resolution.
 		const DONWSAMPLED_COUNT = 1000;
-		const temperature_BMP_Trimmed = lttb(temperature_BMP_Full, DONWSAMPLED_COUNT);
-		const temperature_DHT_Trimmed = lttb(temperature_DHT_Full, DONWSAMPLED_COUNT);
-		const humidity_DHT_Trimmed = lttb(humidity_DHT_Full, DONWSAMPLED_COUNT);
-		const pressure_BMP_Trimmed = lttb(pressure_BMP_Full, DONWSAMPLED_COUNT);
+		const temperature_bmp_Trimmed = lttb(temperature_bmp_Full, DONWSAMPLED_COUNT);
+		const temperature_dht_Trimmed = lttb(temperature_dht_Full, DONWSAMPLED_COUNT);
+		const humidity_dht_Trimmed = lttb(humidity_dht_Full, DONWSAMPLED_COUNT);
+		const pressure_bmp_Trimmed = lttb(pressure_bmp_Full, DONWSAMPLED_COUNT);
 
 		// You can downsample only 1 X and Y value at a time.
 		// Lttb will select points from different dates (X) from each dataset.
 		// If you save the results into the same time point (X), some values will then be slightly shifted.
 		// The alternative is to use separate X axis for each dataset. But then the chart tooltip won't work properly...
-		const trimmedReadings = temperature_BMP_Trimmed.map((_, i) => {
+		const trimmedReadings = temperature_bmp_Trimmed.map((_, i) => {
 			return {
 				id: i,
-				createdAt: temperature_BMP_Trimmed[i][0],
+				created_at: temperature_bmp_Trimmed[i][0],
 
-				temperature_BMP: temperature_BMP_Trimmed[i][1],
-				temperature_DHT: temperature_DHT_Trimmed[i][1],
-				humidity_DHT: humidity_DHT_Trimmed[i][1],
-				pressure_BMP: pressure_BMP_Trimmed[i][1],
+				temperature_bmp: temperature_bmp_Trimmed[i][1],
+				temperature_dht: temperature_dht_Trimmed[i][1],
+				humidity_dht: humidity_dht_Trimmed[i][1],
+				pressure_bmp: pressure_bmp_Trimmed[i][1],
 			};
 		});
 
@@ -108,15 +108,14 @@ export class ReadingsService {
 	 * @param temperature_dht
 	 * @param pressure_bmp
 	 * @param humidity_dht
-	 * @param createdAt optional, if not included, current time will be used
+	 * @param created_at optional, if not included, current time will be used
 	 */
 	public static async createReading(
 		temperature_bmp: number,
 		temperature_dht: number,
 		pressure_bmp: number,
 		humidity_dht: number,
-
-		createdAt: Date | undefined = undefined
+		created_at: Date | undefined = undefined
 	) {
 		const reading = await prisma.readings.create({
 			data: {
@@ -124,9 +123,8 @@ export class ReadingsService {
 				temperature_dht,
 				pressure_bmp,
 				humidity_dht,
-
 				// Undefined means Prisma will use default value (current time).
-				created_at: createdAt,
+				created_at,
 			},
 		});
 
@@ -141,7 +139,7 @@ export class ReadingsService {
 	 * @param temperature_dht
 	 * @param pressure_bmp
 	 * @param humidity_dht
-	 * @param createdAt
+	 * @param created_at
 	 */
 	public static async upsertReading(
 		id: number,
@@ -149,12 +147,12 @@ export class ReadingsService {
 		temperature_dht: number,
 		pressure_bmp: number,
 		humidity_dht: number,
-		createdAt: Date
+		created_at: Date
 	) {
 		const reading = await prisma.readings.upsert({
 			where: { id: id },
 			update: {
-				created_at: createdAt,
+				created_at,
 
 				temperature_bmp,
 				temperature_dht,
@@ -163,7 +161,7 @@ export class ReadingsService {
 			},
 			create: {
 				id,
-				created_at: createdAt,
+				created_at,
 
 				temperature_bmp,
 				temperature_dht,

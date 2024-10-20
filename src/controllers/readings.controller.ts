@@ -185,19 +185,19 @@ export class ReadingsController {
 					throw new AppError(400, 'Bad request', errors.array());
 				}
 
-				const temperature_BMP = parseFloat(req.body.temperature_BMP);
-				const temperature_DHT = parseFloat(req.body.temperature_DHT);
-				const pressure_BMP = parseFloat(req.body.pressure_BMP);
-				const humidity_DHT = parseFloat(req.body.humidity_DHT);
+				const temperature_bmp = parseFloat(req.body.temperature_bmp);
+				const temperature_dht = parseFloat(req.body.temperature_dht);
+				const pressure_bmp = parseFloat(req.body.pressure_bmp);
+				const humidity_dht = parseFloat(req.body.humidity_dht);
 
-				const createdAt = req.body.createdAt ? new Date(req.body.createdAt) : undefined;
+				const created_at = req.body.created_at ? new Date(req.body.created_at) : undefined;
 
 				const reading = await ReadingsService.createReading(
-					temperature_BMP,
-					temperature_DHT,
-					pressure_BMP,
-					humidity_DHT,
-					createdAt
+					temperature_bmp,
+					temperature_dht,
+					pressure_bmp,
+					humidity_dht,
+					created_at
 				);
 
 				if (req.headers['short'] === 'true') {
@@ -239,19 +239,19 @@ export class ReadingsController {
 				}
 
 				const id = parseInt(req.params.id);
-				const temperature_BMP = parseFloat(req.body.temperature_BMP);
-				const temperature_DHT = parseFloat(req.body.temperature_DHT);
-				const pressure_BMP = parseFloat(req.body.pressure_BMP);
-				const humidity_DHT = parseFloat(req.body.humidity_DHT);
-				const createdAt = new Date(req.body.createdAt);
+				const temperature_bmp = parseFloat(req.body.temperature_bmp);
+				const temperature_dht = parseFloat(req.body.temperature_dht);
+				const pressure_bmp = parseFloat(req.body.pressure_bmp);
+				const humidity_dht = parseFloat(req.body.humidity_dht);
+				const created_at = new Date(req.body.created_at);
 
 				const reading = await ReadingsService.upsertReading(
 					id,
-					temperature_BMP,
-					temperature_DHT,
-					pressure_BMP,
-					humidity_DHT,
-					createdAt
+					temperature_bmp,
+					temperature_dht,
+					pressure_bmp,
+					humidity_dht,
+					created_at
 				);
 
 				res.json(reading);
