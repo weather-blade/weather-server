@@ -1,0 +1,39 @@
+name: Build and Typescript type check
+
+on:
+  # when pushing to main
+  push:
+    branches:
+      - '*'
+
+  # manual trigger
+  workflow_dispatch:
+
+# Allow one concurrent run
+concurrency:
+  group: 'type-check'
+  cancel-in-progress: true
+
+jobs:
+  job-1:
+    name: Check types
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the application and check types
+        run: pnpm run build

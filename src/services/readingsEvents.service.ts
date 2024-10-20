@@ -35,7 +35,7 @@ export class ReadingsEventsService {
 	 * Sends reading to all open connections
 	 * @param reading
 	 */
-	public static async sendReadingToAll(reading: Prisma.ReadingsGetPayload<null>) {
+	public static async sendReadingToAll(reading: Prisma.readingsGetPayload<null>) {
 		for (const connection of connections) {
 			try {
 				connection.res.write(`data: ${JSON.stringify(reading)}\n\n`);
