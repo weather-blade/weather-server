@@ -9,13 +9,9 @@
 		"start": "node dist/src/index.js",
 		"dev": "concurrently \"npx tsc --watch\" \"nodemon dist/src/index.js\"",
 		"docker": "docker compose up -d",
-		"db:generate": "prisma generate",
-		"db:push": "prisma db push",
-		"db:seed": "prisma db seed",
-		"db:studio": "prisma studio",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
-		"postinstall": "pnpm dlx prisma generate"
+		"postinstall": "prisma generate"
 	},
 	"devDependencies": {
 		"concurrently": "^9.0.1",
@@ -44,7 +40,7 @@
 		"web-push": "^3.6.7"
 	},
 	"engines": {
-		"node": "22.10.0"
+		"node": "^22"
 	},
 	"prisma": {
 		"seed": "node --loader ts-node/esm prisma/seed.ts"
